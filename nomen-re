@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Bit::Vector;
-use Bit::Vector::String;
+#use Bit::Vector::String;
 
 # Fetch the word to parse.
 my $word = shift || 'abiotically'; # Test cases: 'xyyy'; #'xlylyly';
@@ -20,15 +20,11 @@ for (<DATA>) {
 
 # Find the known word-part positions.
 my ($known, $mask_to_id) = get_knowns($word, $lex);
+#use Data::Dumper;die Data::Dumper->new([$known, $mask_to_id])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 
-# Populate with the initial combinations we find.
-#my $combo = populate($mask_to_id);
+# 
+my $combo = populate($mask_to_id);
 #use Data::Dumper;warn Data::Dumper->new([$combo])->Indent(1)->Terse(1)->Sortkeys(1)->Dump;
-
-# Find the well-formed, ordered recombinations.
-my $combo = get_combos($known, $mask_to_id);
-use Data::Dumper;warn Data::Dumper->new([$combo])->Indent(1)->Terse(1)->Sortkeys(1)->Dump;
-#warn"Root level known masks: ",scalar(keys %$combo),"\n";
 
 sub get_knowns {
     my ($word, $lex) = @_;
@@ -76,83 +72,6 @@ sub get_knowns {
     }
 
     return $known, $mask_to_id;
-}
-
-sub get_combos {
-    my ($known, $mask_to_id) = @_;
-
-    # Populate with the initial combinations we find.
-    my $combo = populate($mask_to_id);
-use Data::Dumper;warn Data::Dumper->new([$combo])->Indent(1)->Terse(1)->Sortkeys(1)->Dump;
-
-    # Mask tree.
-    my $mask_tree = {};
-
-    # Reconstruct the part combinations into non-overlapping, ordered sets.
-    for my $mask (keys %$combo) {
-        # Create the top root-level (first) bitmask.
-        my $root = Bit::Vector->new_Bin($WLEN, $mask);
-        $mask_tree->{$mask} = {};
-
-        # Make id ordered, logical reconstructions of the known matches.
-        for my $i (@{ $combo->{$mask} }) {
-            # Create the "guaranteed to not conflict" ($root | $i) combined vector.
-            my $child = Bit::Vector->new_Bin($WLEN, $known->{$i}{mask});
-            $mask_tree->{$mask}->{$known->{$i}{mask}} = {};
-
-            # Compare to each sibling of the root.
-            for my $j (@{ $combo->{$mask} }) {
-                # Skip if same ID.
-                next if $i eq $j;
-
-                # Compute bitwise or and xor for the sibling.
-                my $sibling = Bit::Vector->new_Bin($WLEN, $known->{$j}{mask});
-                my $result = Bit::Vector->new_Bin($WLEN, $known->{$j}{mask});
-                $sibling->Or($child, $sibling);
-                $result->Xor($child, $result);
-                # Note that the sibling is a valid adjacent mask if all is well.
-                if ($result->equal($sibling)) {
-                    # Combine the mask ancestry.
-                    $result->Or($root, $result);
-                    $mask_tree->{$mask}->{$known->{$i}{mask}}->{$known->{$j}{mask}} = {};
-#warn sprintf "* Alignment! %s | %s | %s = %s\n", $mask, $known->{$i}{mask}, $known->{$j}{mask}, $result->String_Export('b');
-
-                    # Compare to each sibling.
-                    for my $k (keys %{ $mask_tree->{$mask}->{$known->{$i}{mask}} }) {
-                        # Compute bitwise or and xor for the sibling.
-                        my $x = Bit::Vector->new_Bin($WLEN, $k);
-                        my $y = Bit::Vector->new_Bin($WLEN, $k);
-                        $x->Or($result, $x);
-                        $y->Xor($result, $y);
-                        if ($y->equal($x)) {
-                            # Combine the mask ancestry.
-                            $y->Or($result, $y);
-                            $mask_tree->{$mask}->{$known->{$i}{mask}}->{$known->{$j}{mask}}->{$k} = {};
-#warn sprintf "* Alignment! %s | %s | %s | %s = %s\n", $mask, $known->{$i}{mask}, $known->{$j}{mask}, $k, $y->String_Export('b');
-
-                            # Compare to each sibling.
-                            for my $kk (keys %{ $mask_tree->{$mask}->{$known->{$i}{mask}}->{$known->{$j}{mask}} }) {
-                                # Compute bitwise or and xor for the sibling.
-                                my $xx = Bit::Vector->new_Bin($WLEN, $kk);
-                                my $yy = Bit::Vector->new_Bin($WLEN, $kk);
-                                $xx->Or($y, $xx);
-                                $yy->Xor($y, $yy);
-                                if ($yy->equal($xx)) {
-                                    # Combine the mask ancestry.
-                                    $yy->Or($y, $yy);
-                                    $mask_tree->{ $mask }{ $known->{$i}{mask} }{ $known->{$j}{mask} }->{ $k }{ $kk } = {};
-#warn sprintf "* Alignment! %s | %s | %s | %s | %s = %s\n", $mask, $known->{$i}{mask}, $known->{$j}{mask}, $k, $kk, $yy->String_Export('b');
-
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        }
-    }
-
-    return $mask_tree;
 }
 
 sub populate {
