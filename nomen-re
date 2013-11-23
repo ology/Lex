@@ -19,12 +19,12 @@ for (<DATA>) {
 }
 
 # Find the known word-part positions.
-my ($known, $mask_to_id) = get_knowns($word, $lex);
-#use Data::Dumper;die Data::Dumper->new([$known, $mask_to_id])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+my ($known, $mask_id) = get_knowns($word, $lex);
+#use Data::Dumper;die Data::Dumper->new([$known, $mask_id])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 
 # 
-my $combo = populate($mask_to_id);
-#use Data::Dumper;warn Data::Dumper->new([$combo])->Indent(1)->Terse(1)->Sortkeys(1)->Dump;
+my $combo = populate($mask_id);
+use Data::Dumper;warn Data::Dumper->new([$combo])->Indent(1)->Terse(1)->Sortkeys(1)->Dump;
 
 sub get_knowns {
     my ($word, $lex) = @_;
@@ -34,7 +34,7 @@ sub get_knowns {
 
     # Poor-man's relational integrity:
     my $id = 0;
-    my $mask_to_id = {};
+    my $mask_id = {};
 
     for my $i (values %$lex) {
         while ($word =~ /$i->{re}/g) {
@@ -67,51 +67,56 @@ sub get_knowns {
                 mask => $mask,
             };
             # Save the relationship between mask and id.
-            $mask_to_id->{$mask} = $id++;
+            $mask_id->{$mask} = $id++;
         }
     }
 
-    return $known, $mask_to_id;
+    return $known, $mask_id;
 }
 
-sub populate {
-    my $mask_to_id = shift;
+sub populate { # Associate non-overlaping ids.
+
+    # Use the mask-id hash to create the population list.
+    my $mask_id = shift;
+
     # Bucket of non-overlapping masks.
     my $population = {};
+
     # For each known mask...
-    for my $mask (keys %$mask_to_id) {
+    for my $mask (keys %$mask_id) {
+
         # Keep track of masks that have been seen.
         my $seen = {};
         # And we have definitely seen this mask.
         $seen->{$mask}++;
-        $population->{$mask} = {};
+
         # Prepare for bitwise operations.
         my $bitmask = Bit::Vector->new_Bin($WLEN, $mask);
-#        $population = populate_under($mask_to_id, $bitmask, $seen, $population->{$mask}); 
-    }
-    return $population;
-}
 
-sub populate_under {
-    my ($mask_to_id, $bitmask, $seen, $population) = @_;
-    # Compare to all unseen masks.
-    for my $i (keys %$mask_to_id) {
-        # Skip if mask has been seen.
-        next if $seen->{$i};
-        # We have definitely seen this mask.
-        $seen->{$i}++;
-        # Create the binary operands to compare.
-        my $sibling = Bit::Vector->new_Bin($WLEN, $i);
-        my $vector = Bit::Vector->new_Bin($WLEN, $i);
-        # Compute or and xor.
-        $sibling->Or($bitmask, $sibling);
-        $vector->Xor($bitmask, $vector);
-        # Save cases where bitwise or equals xor.
-        if ($vector->equal($sibling)) {
-#warn sprintf "* %s => %s\n", $i, $vector->String_Export('b');
-            $population->{$i} = populate_under($mask_to_id, $vector, $seen, $population); 
+        # Inspect each unseen mask.
+        for my $m (keys %$mask_id) {
+
+            # Skip if this mask has been seen.
+            next if $seen->{$m};
+            # And we have now seen this "sibling mask."
+            $seen->{$m}++;
+
+            # Create the binary operands to compare.
+            my $sibling  = Bit::Vector->new_Bin($WLEN, $m);
+            my $xorclone = Bit::Vector->new_Bin($WLEN, $m);
+
+            # Compute or and xor.
+            $sibling->Or($bitmask, $sibling);
+            $xorclone->Xor($bitmask, $xorclone);
+
+            # Save cases where bitwise or equals xor.
+            if ($xorclone->equal($sibling)) {
+#warn sprintf "* %s => %s\n", $m, $xorclone->String_Export('b');
+                push @{ $population->{ $mask_id->{$mask} } }, $mask_id->{$m};
+            }
         }
     }
+
     return $population;
 }
 
