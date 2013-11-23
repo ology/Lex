@@ -3,7 +3,7 @@ use strict;
 use warnings;
 
 use Bit::Vector;
-#use Bit::Vector::String;
+use Bit::Vector::String; # For debugging output.
 
 # Fetch the word to parse.
 my $word = shift || 'abiotically'; # Test cases: 'xyyy'; #'xlylyly';
@@ -23,8 +23,7 @@ my ($known, $mask_id) = get_knowns($word, $lex);
 #use Data::Dumper;die Data::Dumper->new([$known, $mask_id])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 
 # 
-my $combo = populate($mask_id);
-use Data::Dumper;warn Data::Dumper->new([$combo])->Indent(1)->Terse(1)->Sortkeys(1)->Dump;
+my $combos = populate($mask_id);
 
 sub get_knowns {
     my ($word, $lex) = @_;
@@ -111,7 +110,7 @@ sub populate { # Associate non-overlaping ids.
 
             # Save cases where bitwise or equals xor.
             if ($xorclone->equal($sibling)) {
-#warn sprintf "* %s => %s\n", $m, $xorclone->String_Export('b');
+#warn sprintf "(%d) %s => %s (%d + %d)\n", $mask_id->{$m}, $m, $xorclone->String_Export('b'), $mask_id->{$mask}, $mask_id->{$m};
                 push @{ $population->{ $mask_id->{$mask} } }, $mask_id->{$m};
             }
         }
