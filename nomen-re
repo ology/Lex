@@ -24,6 +24,7 @@ my ($known, $mask_id) = get_knowns($word, $lex);
 
 # 
 my $combos = populate($mask_id);
+use Data::Dumper;warn Data::Dumper->new([$combos])->Indent(1)->Terse(1)->Sortkeys(1)->Dump;
 
 sub get_knowns {
     my ($word, $lex) = @_;
@@ -117,6 +118,9 @@ sub populate { # Associate non-overlaping ids.
     }
 
     return $population;
+}
+
+sub mash { # Mash the non-overlapping parts into valid reconstructions.
 }
 
 __DATA__
