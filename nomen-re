@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 
+use Algorithm::Loops 'NestedLoops';
 use Bit::Vector;
 use Bit::Vector::String; # For debugging output.
 
@@ -20,11 +21,11 @@ for (<DATA>) {
 
 # Find the known word-part positions.
 my ($known, $mask_id) = get_knowns($word, $lex);
-#use Data::Dumper;die Data::Dumper->new([$known, $mask_id])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
-
-# 
-my $combos = populate($mask_id);
-use Data::Dumper;warn Data::Dumper->new([$combos])->Indent(1)->Terse(1)->Sortkeys(1)->Dump;
+#use Data::Dumper;warn Data::Dumper->new([$known])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+#use Data::Dumper;die Data::Dumper->new([
+#map { "$_ => $mask_id->{$_}" } sort { $b cmp $a } keys %$mask_id
+#])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+powerset([keys %$mask_id]);
 
 sub get_knowns {
     my ($word, $lex) = @_;
@@ -74,53 +75,73 @@ sub get_knowns {
     return $known, $mask_id;
 }
 
-sub populate { # Associate non-overlaping ids.
+sub does_not_overlap { # Compute whether the given masks overlap.
 
-    # Use the mask-id hash to create the population list.
-    my $mask_id = shift;
+    # Get our masks to check.
+    my ($mask, $check) = @_;
 
-    # Bucket of non-overlapping masks.
-    my $population = {};
+    # Create the bitstrings to compare.
+    my $bitmask  = Bit::Vector->new_Bin($WLEN, $mask);
+    my $sibling  = Bit::Vector->new_Bin($WLEN, $check);
+    my $xorclone = Bit::Vector->new_Bin($WLEN, $check);
 
-    # For each known mask...
-    for my $mask (keys %$mask_id) {
+    # Compute or and xor for the strings.
+    $sibling->Or($bitmask, $sibling);
+    $xorclone->Xor($bitmask, $xorclone);
 
-        # Keep track of masks that have been seen.
-        my $seen = {};
-        # And we have definitely seen this mask.
-        $seen->{$mask}++;
-
-        # Prepare for bitwise operations.
-        my $bitmask = Bit::Vector->new_Bin($WLEN, $mask);
-
-        # Inspect each unseen mask.
-        for my $m (keys %$mask_id) {
-
-            # Skip if this mask has been seen.
-            next if $seen->{$m};
-            # And we have now seen this "sibling mask."
-            $seen->{$m}++;
-
-            # Create the binary operands to compare.
-            my $sibling  = Bit::Vector->new_Bin($WLEN, $m);
-            my $xorclone = Bit::Vector->new_Bin($WLEN, $m);
-
-            # Compute or and xor.
-            $sibling->Or($bitmask, $sibling);
-            $xorclone->Xor($bitmask, $xorclone);
-
-            # Save cases where bitwise or equals xor.
-            if ($xorclone->equal($sibling)) {
-#warn sprintf "(%d) %s => %s (%d + %d)\n", $mask_id->{$m}, $m, $xorclone->String_Export('b'), $mask_id->{$mask}, $mask_id->{$m};
-                push @{ $population->{ $mask_id->{$mask} } }, $mask_id->{$m};
-            }
-        }
-    }
-
-    return $population;
+    # Return whether the or'd sibling equals the xor'd sibling.
+    return $xorclone->equal($sibling) ? 1 : 0;
 }
 
-sub mash { # Mash the non-overlapping parts into valid reconstructions.
+sub powerset { # Traverse the powerset
+
+    # Get the set over which to iterate.
+    my $set = shift;
+
+    # Create and visit each member of the "set of all sets."
+    my $next = iter_powerset(@$set);
+    while (my @combo = $next->() ) {
+
+        # TODO Skip if...
+#        next unless @combo == ;
+warn "C:'@combo'\n";
+
+        # TODO push good if union == intersection
+    }
+}
+
+sub iter_powerset { # TODO This algorithm lifted from an as of yet unknown source.
+    my @factor = @_;
+    my $end = $#factor;
+    my @subset = (undef) x $end;
+    my ($pos, $mode) = (-1, 1);
+    my $return = sub { return @factor[ grep defined, @subset ] };
+    my %dispatch = (
+        1 => sub {
+            ++$pos;
+            $subset[ $pos ] = $pos;
+            ++$mode if $pos == $end;
+            $return->();
+        },
+        2 => sub {
+            $subset[ $pos - 1 ] = undef;
+            ++$mode;
+            $return->();
+        },
+        3 => sub {
+            $subset[ $pos-- ] = undef;
+            while ( $pos >= 0 ) {
+                last if defined $subset[ $pos ];
+                --$pos;
+            }
+            $subset[ $pos++ ] = undef;
+            return () if ! $pos;
+            $subset[ $pos ] = $pos;
+            $mode = 1;
+            $return->();
+        },
+    );
+    return sub { $dispatch{ $mode }->() };
 }
 
 __DATA__
