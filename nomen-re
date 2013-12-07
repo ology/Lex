@@ -4,7 +4,6 @@ use warnings;
 
 use Algorithm::Loops 'NestedLoops';
 use Bit::Vector;
-use Bit::Vector::String; # For debugging output.
 
 # Fetch the word to parse.
 my $word = shift || 'abiotically'; # Test cases: 'xyyy'; #'xlylyly';
@@ -25,7 +24,10 @@ my ($known, $mask_id) = get_knowns($word, $lex);
 #use Data::Dumper;die Data::Dumper->new([
 #map { "$_ => $mask_id->{$_}" } sort { $b cmp $a } keys %$mask_id
 #])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
-powerset([keys %$mask_id]);
+
+my $combos = combos([keys %$mask_id]);
+use Data::Dumper;warn
+Data::Dumper->new([$combos])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 
 sub get_knowns {
     my ($word, $lex) = @_;
@@ -90,24 +92,53 @@ sub does_not_overlap { # Compute whether the given masks overlap.
     $xorclone->Xor($bitmask, $xorclone);
 
     # Return whether the or'd sibling equals the xor'd sibling.
-    return $xorclone->equal($sibling) ? 1 : 0;
+    return $xorclone->equal($sibling) ? $sibling->to_Bin : 0;
 }
 
-sub powerset { # Traverse the powerset
+sub combos { # Traverse the powerset
 
     # Get the set over which to iterate.
     my $set = shift;
 
+    # Declare our bucket of non-overlapping combinations.
+    my @combos = ();
+
     # Create and visit each member of the "set of all sets."
     my $next = iter_powerset(@$set);
     while (my @combo = $next->() ) {
+#warn "C:'@combo'\n";
 
-        # TODO Skip if...
-#        next unless @combo == ;
-warn "C:'@combo'\n";
+        # Set the last member seen to nothing;
+        my $last = '';
 
-        # TODO push good if union == intersection
+        # Define our overlap seen flag.
+        my $flag = 0;
+
+        # Xor + Or each member with the accumulated.
+        for my $member (@combo) {
+
+            # Set the last seen and skip the first member.
+            unless ($last) {
+                $last = $member;
+                next;
+            }
+
+            # Set the last seen member but skip the whole combo if the bitstrings overlap.
+            unless ($last = does_not_overlap($last, $member)) {
+
+                # Flag this combo as naughty.
+                $flag = 1;
+            }
+        }
+
+        # Skip if this combo has been flagged.
+        next if $flag;
+
+        # Add this combo to the non-overlapping set.
+        push @combos, \@combo;
     }
+
+    return \@combos;
 }
 
 sub iter_powerset { # TODO This algorithm lifted from an as of yet unknown source.
@@ -149,6 +180,7 @@ a(?=\w) opposite
 ab(?=\w) away
 bi(?=\w) two
 bio(?=\w) life
+(?<=\w)al type
 (?<=\w)ic belonging
 (?<=\w)ly like
 (?<=\w)o(?=\w) combining
