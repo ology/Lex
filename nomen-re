@@ -4,13 +4,16 @@ use warnings;
 
 use Algorithm::Loops 'NestedLoops';
 use Bit::Vector;
+use lib '../Lingua-TokenParse/lib';
+use Lingua::TokenParse;
 use List::Compare;
 
 # Fetch the word to parse.
-my $word = shift || 'abiotically'; # Test cases: 'xyyy'; #'xlylyly';
+my $word = shift || 'abioticaly'; # Test cases: 'xyyy'; #'xlylyly';
 my $WLEN = length $word;
 warn "word: $word ($WLEN)\n";
 
+# TODO Use the L::TP built-in method for this.
 # Populate word-part regular expression lexicon.
 my $lex = {};
 for (<DATA>) {
@@ -18,6 +21,14 @@ for (<DATA>) {
     my ($re, $defn) = split /\s+/, $_, 2;
     $lex->{$re} = { defn => $defn, re => qr/$re/ };
 }
+
+my $p = Lingua::TokenParse->new(
+    word => $word,
+#    lexicon => { map { $lex->{re} => $lex->{defn} } keys %$lex },
+);
+my $c = $p->build_combinations;
+use Data::Dumper;die
+Data::Dumper->new([$c])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 
 # Find the known word-part positions.
 my ($known, $mask_id) = get_knowns($word, $lex);
@@ -27,15 +38,29 @@ my ($known, $mask_id) = get_knowns($word, $lex);
 #    sort { $known->{$a}{span}[0] <=> $known->{$b}{span}[0]
 #        || $known->{$a}{span}[1] <=> $known->{$b}{span}[1] } keys %$known
 #])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+use Data::Dumper;die Data::Dumper->new([
+map { $known->{$_}{part} => $known->{$_}{span} } keys %$known
+])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 #use Data::Dumper;die Data::Dumper->new([
 #map { "$_ => $mask_id->{$_}" } sort { $b cmp $a } keys %$mask_id
 #])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 
+my $final = [];
 my $combos = [];
 my $overlaps = {};
+
 combo(keys %$mask_id);
-use Data::Dumper;warn Data::Dumper->new([$combos])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
-use Data::Dumper;warn Data::Dumper->new([$overlaps])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+push @$final, $combos;
+$combos = [];
+
+for my $part (keys %$overlaps) {
+    combo($part, keys %$mask_id);
+    push @$final, $combos;
+    $combos = [];
+}
+
+use Data::Dumper;warn Data::Dumper->new([$final])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+#use Data::Dumper;warn Data::Dumper->new([$overlaps])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 
 sub get_knowns {
     my ($word, $lex) = @_;
