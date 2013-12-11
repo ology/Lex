@@ -22,18 +22,20 @@ for (<DATA>) {
 # Find the known word-part positions.
 my ($known, $mask_id) = get_knowns($word, $lex);
 #use Data::Dumper;die Data::Dumper->new([$known])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
-use Data::Dumper;die Data::Dumper->new([
-map { $known->{$_}{part} }
-    sort { $known->{$a}{span}[0] <=> $known->{$b}{span}[0]
-        || $known->{$a}{span}[1] <=> $known->{$b}{span}[1] } keys %$known
-])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+#use Data::Dumper;die Data::Dumper->new([
+#map { $known->{$_}{part} }
+#    sort { $known->{$a}{span}[0] <=> $known->{$b}{span}[0]
+#        || $known->{$a}{span}[1] <=> $known->{$b}{span}[1] } keys %$known
+#])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 #use Data::Dumper;die Data::Dumper->new([
 #map { "$_ => $mask_id->{$_}" } sort { $b cmp $a } keys %$mask_id
 #])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 
-my $combos = combos([keys %$mask_id]);
-use Data::Dumper;warn
-Data::Dumper->new([$combos])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+my $combos = [];
+my $overlaps = {};
+combo(keys %$mask_id);
+use Data::Dumper;warn Data::Dumper->new([$combos])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+use Data::Dumper;warn Data::Dumper->new([$overlaps])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 
 sub get_knowns {
     my ($word, $lex) = @_;
@@ -81,6 +83,22 @@ sub get_knowns {
     }
 
     return $known, $mask_id;
+}
+
+sub combo { # Recursively construct the combo list of lists.
+    my ($head, @tail) = @_;
+    return 0 unless $head;
+    if ($head && !@$combos) {
+        push @$combos, $head;
+    }
+    if (my $union = does_not_overlap($head, $tail[0])) {
+        push @$combos, $tail[0];
+        combo($union, @tail[1 .. $#tail]);
+    }
+    else {
+        $overlaps->{ $tail[0] }++;
+        combo($head, @tail[1 .. $#tail]) if $head && @tail[1 .. $#tail];
+    }
 }
 
 sub does_not_overlap { # Compute whether the given masks overlap.
