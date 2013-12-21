@@ -2,11 +2,7 @@
 use strict;
 use warnings;
 
-use Algorithm::Loops 'NestedLoops';
 use Bit::Vector;
-use lib '../Lingua-TokenParse/lib';
-use Lingua::TokenParse;
-use List::Compare;
 
 # Fetch the word to parse.
 my $word = shift || 'abioticaly'; # Test cases: 'xyyy'; #'xlylyly';
@@ -21,14 +17,6 @@ for (<DATA>) {
     my ($re, $defn) = split /\s+/, $_, 2;
     $lex->{$re} = { defn => $defn, re => qr/$re/ };
 }
-
-my $p = Lingua::TokenParse->new(
-    word => $word,
-#    lexicon => { map { $lex->{re} => $lex->{defn} } keys %$lex },
-);
-my $c = $p->build_combinations;
-use Data::Dumper;die
-Data::Dumper->new([$c])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 
 # Find the known word-part positions.
 my ($known, $mask_id) = get_knowns($word, $lex);
