@@ -22,18 +22,17 @@ for (<DATA>) {
 
 # Find the known word-part positions.
 my ($known, $mask_id) = get_knowns($word, $lex);
-#die Data::Dumper->new([$known])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 #die Data::Dumper->new([
-# map { $known->{$_}{part} }
+#$known
+##
+#map { $known->{$_}{part} }
 #    sort { $known->{$a}{span}[0] <=> $known->{$b}{span}[0]
 #        || $known->{$a}{span}[1] <=> $known->{$b}{span}[1] } keys %$known
-# ])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
-#die Data::Dumper->new([
-# map { $known->{$_}{part} => $known->{$_}{span} } keys %$known
-# ])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
-#die Data::Dumper->new([
-# map { "$_ => $mask_id->{$_}" } sort { $b <=> $a } keys %$mask_id
-# ])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+##
+#map { $known->{$_}{part} => $known->{$_}{span} } keys %$known
+##
+#map { "$_ => $mask_id->{$_}" } sort { $b <=> $a } keys %$mask_id
+#])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 
 my $combos = power($mask_id);
 score($combos);
