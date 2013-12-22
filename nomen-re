@@ -3,6 +3,8 @@ use strict;
 use warnings;
 
 use Bit::Vector;
+use Data::Dumper;
+use Data::PowerSet;
 
 # Fetch the word to parse.
 my $word = shift || 'abioticaly'; # Test cases: 'xyyy'; #'xlylyly';
@@ -20,37 +22,76 @@ for (<DATA>) {
 
 # Find the known word-part positions.
 my ($known, $mask_id) = get_knowns($word, $lex);
-#use Data::Dumper;die Data::Dumper->new([$known])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
-#use Data::Dumper;die Data::Dumper->new([
-#map { $known->{$_}{part} }
+#die Data::Dumper->new([$known])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+#die Data::Dumper->new([
+# map { $known->{$_}{part} }
 #    sort { $known->{$a}{span}[0] <=> $known->{$b}{span}[0]
 #        || $known->{$a}{span}[1] <=> $known->{$b}{span}[1] } keys %$known
-#])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
-use Data::Dumper;die Data::Dumper->new([
-map { $known->{$_}{part} => $known->{$_}{span} } keys %$known
-])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
-#use Data::Dumper;die Data::Dumper->new([
-#map { "$_ => $mask_id->{$_}" } sort { $b cmp $a } keys %$mask_id
-#])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+# ])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+#die Data::Dumper->new([
+# map { $known->{$_}{part} => $known->{$_}{span} } keys %$known
+# ])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+#die Data::Dumper->new([
+# map { "$_ => $mask_id->{$_}" } sort { $b <=> $a } keys %$mask_id
+# ])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 
-my $final = [];
-my $combos = [];
-my $overlaps = {};
+my $combos = power($mask_id);
+score($combos);
 
-combo(keys %$mask_id);
-push @$final, $combos;
-$combos = [];
+sub score {
+    # Get the list of combinations.
+    my $combos = shift;
 
-for my $part (keys %$overlaps) {
-    combo($part, keys %$mask_id);
-    push @$final, $combos;
-    $combos = [];
+    # Visit each
+    my $i = 0;
+    for my $c (@$combos) {
+        $i++;
+        my $sum = or_together(@$c);
+warn "$i S: $sum\n";
+    }
 }
 
-use Data::Dumper;warn Data::Dumper->new([$final])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
-#use Data::Dumper;warn Data::Dumper->new([$overlaps])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+sub power { # Find the "non-overlapping powerset."
+    # List if bitmasks.
+    my $masks = shift;
 
-sub get_knowns {
+    # The bucket for our saved combinations.
+    my $combos = [];
+
+    # Get a new powerset generator.
+    my $power = Data::PowerSet->new(keys %$mask_id);
+
+    # Decide if the powerset is to save or discard.
+    while (my $collection = $power->next) {
+#warn "C:@$collection\n";
+
+        # Compare each item against the others.
+        my $last = '';
+        for my $i (0 .. @$collection - 1) {
+            # Set the current mask.
+            my $mask = $collection->[$i];
+
+            # First, have a pair of masks.
+            if (not $last) {
+                $last = $mask;
+                next;
+            }
+            # Skip this collection if any pair overlap.
+            elsif (not does_not_overlap($last, $mask)) {
+                last;
+            }
+            # Save this collection if we make it to the end.
+            elsif ($i == @$collection - 1) {
+                push @$combos, $collection;
+            }
+        }
+    }
+
+    # Hand back the "non-overlapping powerset."
+    return $combos;
+}
+
+sub get_knowns { # Fingerprint the known word parts.
     my ($word, $lex) = @_;
 
     # Find the known word-part positions.
@@ -98,22 +139,6 @@ sub get_knowns {
     return $known, $mask_id;
 }
 
-sub combo { # Recursively construct the combo list of lists.
-    my ($head, @tail) = @_;
-    return 0 unless $head;
-    if ($head && !@$combos) {
-        push @$combos, $head;
-    }
-    if (my $union = does_not_overlap($head, $tail[0])) {
-        push @$combos, $tail[0];
-        combo($union, @tail[1 .. $#tail]);
-    }
-    else {
-        $overlaps->{ $tail[0] }++;
-        combo($head, @tail[1 .. $#tail]) if $head && @tail[1 .. $#tail];
-    }
-}
-
 sub does_not_overlap { # Compute whether the given masks overlap.
 
     # Get our masks to check.
@@ -121,15 +146,35 @@ sub does_not_overlap { # Compute whether the given masks overlap.
 
     # Create the bitstrings to compare.
     my $bitmask  = Bit::Vector->new_Bin($WLEN, $mask);
-    my $sibling  = Bit::Vector->new_Bin($WLEN, $check);
+    my $orclone  = Bit::Vector->new_Bin($WLEN, $check);
     my $xorclone = Bit::Vector->new_Bin($WLEN, $check);
 
     # Compute or and xor for the strings.
-    $sibling->Or($bitmask, $sibling);
+    $orclone->Or($bitmask, $orclone);
     $xorclone->Xor($bitmask, $xorclone);
 
-    # Return whether the or'd sibling equals the xor'd sibling.
-    return $xorclone->equal($sibling) ? $sibling->to_Bin : 0;
+    # Return the "or & xor equivalent sibling."
+    return $xorclone->equal($orclone) ? $orclone->to_Bin : 0;
+}
+
+sub or_together { # Combine a list of bitmasks.
+
+    # Get our masks to score.
+    my @masks = @_;
+
+    # Initialize the bitmask to return, to zero.
+    my $result = Bit::Vector->new_Bin($WLEN, (0 x $WLEN));
+
+    for my $mask (@masks) {
+        # Create the bitstrings to compare.
+        my $bitmask = Bit::Vector->new_Bin($WLEN, $mask);
+
+        # Get the union of the bit strings.
+        $result->Or($result, $bitmask);
+    }
+
+    # Return the "or sum."
+    return $result->to_Bin;
 }
 
 __DATA__
