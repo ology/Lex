@@ -72,7 +72,7 @@ sub score {
         }
 
         my $val = "$scored: ";
-        for my $x ( @$c ) {
+        for my $x ( reverse sort @$c ) {
             my $y = rle($x);
             $val .= "$x ($y) ";
         }
