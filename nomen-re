@@ -21,7 +21,7 @@ for (<DATA>) {
 
 # Find the known word-part positions.
 my ($known, $mask_id) = get_knowns($word, $lex);
-die Dumper
+#die Dumper
 #    $known,
 #    $mask_id,
 ##
