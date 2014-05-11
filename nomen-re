@@ -33,10 +33,10 @@ $known
 #map { "$_ => $mask_id->{$_}" } sort { $b <=> $a } keys %$mask_id
 #;
 
-#my $combos = power($mask_id);
-#my $score = score($combos);
+my $combos = power($mask_id);
+my $score  = score($combos);
 #warn Dumper $score;
-#warn Dumper $score->{ [ sort keys $score ]->[-1] };
+warn Dumper $score->{ [ sort keys $score ]->[-1] };
 
 sub score {
     # Get the list of combinations.
