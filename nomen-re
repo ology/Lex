@@ -20,8 +20,9 @@ for (<DATA>) {
 
 # Find the known word-part positions.
 my ($known, $mask_id) = get_knowns($word, $lex);
-#die Data::Dumper->new([
-#$known
+#use Data::Dumper::Concise;
+#die Dumper
+$known
 ##
 #map { $known->{$_}{part} }
 #    sort { $known->{$a}{span}[0] <=> $known->{$b}{span}[0]
@@ -30,11 +31,11 @@ my ($known, $mask_id) = get_knowns($word, $lex);
 #map { $known->{$_}{part} => $known->{$_}{span} } keys %$known
 ##
 #map { "$_ => $mask_id->{$_}" } sort { $b <=> $a } keys %$mask_id
-#])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+#;
 
-my $combos = power($mask_id);
-my $score = score($combos);
-use Data::Dumper;warn Data::Dumper->new([ $score ])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+#my $combos = power($mask_id);
+#my $score = score($combos);
+#use Data::Dumper;warn Data::Dumper->new([ $score ])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 #use Data::Dumper;warn Data::Dumper->new([ $score->{ [ sort keys $score ]->[-1] } ])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 
 sub score {
