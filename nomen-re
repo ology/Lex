@@ -35,10 +35,10 @@ my ($known, $mask_id) = get_knowns($word, $lex);
 #;
 
 my $combos = power($mask_id);
-warn "C: ",scalar(@$combos),"\n";
+#warn "C: ",scalar(@$combos),"\n";
 #warn Dumper $combos;
-#my $score  = score($combos);
-#warn Dumper $score->{ [ sort keys $score ]->[-1] };
+my $score  = score($combos);
+warn Dumper $score->{ [ sort keys $score ]->[-1] };
 #warn Dumper $score;
 
 sub score {
@@ -54,14 +54,10 @@ sub score {
         $i++;
         my $together = or_together(@$c);
 
-        # We score that which has been combined...
-        my $scored = $together;
-        $scored =~ s/1/k/g; # Undigitize
-        $scored =~ s/0/u/g; # "
-        # Count contiguous chars.
-        $scored =~ s/(.)\1*/$1. length $&/ge;
-        my @groups = $scored =~ /([ku]\d+)/g;
+        # Run-length encode an "un-digitized" string.
+        my $scored = rle($together);
 
+        my @groups = $scored =~ /([ku]\d+)/g;
         my ( $knowns, $unknowns ) = ( 0, 0 );
         my ( $knownc, $unknownc ) = ( 0, 0 );
         for ( @groups ) {
@@ -75,11 +71,31 @@ sub score {
             }
         }
 
-        push @{ $score->{$together} }, "@$c => " . join( ', ', @{ reconstruct( $word, @$c ) } ) . " => $scored => chunks:$knowns/$unknowns, chars:$knownc/$unknownc";
+        my $val = "$scored: ";
+        for my $x ( @$c ) {
+            my $y = rle($x);
+            $val .= "$x ($y) ";
+        }
+        $val .= '=> '
+          . join( ', ', @{ reconstruct( $word, @$c ) } )
+#          . " => chunks:$knowns/$unknowns, chars:$knownc/$unknownc"
+        ;
+
+        push @{ $score->{$together} }, $val;
     }
 
     # 
     return $score;
+}
+
+sub rle {
+    my $scored = shift;
+    # Run-length encode an "un-digitized" string.
+    $scored =~ s/1/k/g; # Undigitize
+    $scored =~ s/0/u/g; # "
+    # Count contiguous chars.
+    $scored =~ s/(.)\1*/$1. length $&/ge;
+    return $scored;
 }
 
 sub power { # Find the "non-overlapping powerset."
