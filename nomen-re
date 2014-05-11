@@ -2,7 +2,6 @@
 use strict;
 use warnings;
 
-use Data::Dumper; # DEBUGING ONLY
 use Bit::Vector;
 use Data::PowerSet;
 
@@ -35,7 +34,8 @@ my ($known, $mask_id) = get_knowns($word, $lex);
 
 my $combos = power($mask_id);
 my $score = score($combos);
-use Data::Dumper;warn Data::Dumper->new([$score])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+use Data::Dumper;warn Data::Dumper->new([ $score ])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+#use Data::Dumper;warn Data::Dumper->new([ $score->{ [ sort keys $score ]->[-1] } ])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
 
 sub score {
     # Get the list of combinations.
@@ -50,16 +50,28 @@ sub score {
         $i++;
         my $together = or_together(@$c);
 
+        # We score that which has been combined...
         my $scored = $together;
         $scored =~ s/1/k/g; # Undigitize
         $scored =~ s/0/u/g; # "
         # Count contiguous chars.
         $scored =~ s/(.)\1*/$1. length $&/ge;
+        my @groups = $scored =~ /([ku]\d+)/g;
 
-        my @groups = split /[ku]\d+/, $scored;
+        my ( $knowns, $unknowns ) = ( 0, 0 );
+        my ( $knownc, $unknownc ) = ( 0, 0 );
+        for ( @groups ) {
+            if ( /k(\d+)/ ) {
+                $knowns++;
+                $knownc += $1;
+            }
+            if ( /u(\d+)/ ) {
+                $unknowns++;
+                $unknownc += $1;
+            }
+        }
 
-        # Groups:
-        push @{ $score->{$together} }, "@$c => " . join ', ', @{ reconstruct( $word, @$c ) };
+        push @{ $score->{$together} }, "@$c => " . join( ', ', @{ reconstruct( $word, @$c ) } ) . " => $scored => chunks:$knowns/$unknowns, chars:$knownc/$unknownc";
     }
 
     # 
