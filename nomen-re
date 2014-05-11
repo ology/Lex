@@ -34,8 +34,8 @@ my ($known, $mask_id) = get_knowns($word, $lex);
 #    map { "$_ => $mask_id->{$_}" } sort { $b <=> $a } keys %$mask_id
 #;
 
-#my $combos = power($mask_id);
-#warn "C: ",scalar(@$combos),"\n";
+my $combos = power($mask_id);
+warn "C: ",scalar(@$combos),"\n";
 #warn Dumper $combos;
 #my $score  = score($combos);
 #warn Dumper $score->{ [ sort keys $score ]->[-1] };
@@ -90,7 +90,7 @@ sub power { # Find the "non-overlapping powerset."
     my $combos = [];
 
     # Get a new powerset generator.
-    my $power = Data::PowerSet->new(keys %$masks);
+    my $power = Data::PowerSet->new(sort keys %$masks);
 
     # Decide if the powerset is to save or discard.
     while (my $collection = $power->next) {
@@ -113,6 +113,7 @@ sub power { # Find the "non-overlapping powerset."
             }
             # Save this collection if we make it to the end.
             elsif ($i == @$collection - 1) {
+#warn "M:$last v $mask\n";
                 push @$combos, $collection;
             }
         }
