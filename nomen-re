@@ -2,6 +2,7 @@
 use strict;
 use warnings;
 
+use Data::Dumper::Concise;
 use Bit::Vector;
 use Data::PowerSet;
 
@@ -20,7 +21,6 @@ for (<DATA>) {
 
 # Find the known word-part positions.
 my ($known, $mask_id) = get_knowns($word, $lex);
-#use Data::Dumper::Concise;
 #die Dumper
 $known
 ##
@@ -35,8 +35,8 @@ $known
 
 #my $combos = power($mask_id);
 #my $score = score($combos);
-#use Data::Dumper;warn Data::Dumper->new([ $score ])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
-#use Data::Dumper;warn Data::Dumper->new([ $score->{ [ sort keys $score ]->[-1] } ])->Indent(1)->Terse(1)->Quotekeys(0)->Sortkeys(1)->Dump;
+#warn Dumper $score;
+#warn Dumper $score->{ [ sort keys $score ]->[-1] };
 
 sub score {
     # Get the list of combinations.
