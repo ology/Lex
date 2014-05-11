@@ -22,7 +22,7 @@ for (<DATA>) {
 # Find the known word-part positions.
 my ($known, $mask_id) = get_knowns($word, $lex);
 #die Dumper
-$known
+#$known
 ##
 #map { $known->{$_}{part} }
 #    sort { $known->{$a}{span}[0] <=> $known->{$b}{span}[0]
