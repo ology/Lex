@@ -39,7 +39,7 @@ my $combos = power($mask_id);
 #warn Dumper $combos;
 my $score  = score($combos);
 #warn Dumper $score->{ [ sort keys $score ]->[-1] };
-#warn Dumper $score;
+warn Dumper $score;
 
 sub score {
     # Get the list of combinations.
@@ -127,11 +127,12 @@ sub power { # Find the "non-overlapping powerset."
 
     # Decide if the powerset is to save or discard.
     while (my $collection = $power->next) {
-warn "C:@$collection\n";
+#warn "C:@$collection\n";
 
         # Compare each item against the others.
         my $last = '';
         for my $i (0 .. @$collection - 1) {
+            next if $i < $posn;
             # Set the current mask.
             my $mask = $collection->[$i];
 
@@ -149,8 +150,11 @@ warn "C:@$collection\n";
             # Save this collection if we make it to the end.
             elsif ($i == @$collection - 1) {
 #warn "\tE:$last v $mask\n";
-# TODO Reset $power minus $mask unless we've reached the last collection.
                 push @$combos, $collection;
+            }
+            else {
+#warn "\tG:$last v $mask\n";
+                # TODO Reset $power minus $mask unless we've reached the last collection.
             }
         }
     }
