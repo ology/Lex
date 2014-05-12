@@ -23,7 +23,6 @@ for (<DATA>) {
 my ($known, $mask_id) = get_knowns($word, $lex);
 #warn Dumper $known;
 my $combos = power($mask_id);
-#warn "C: ",scalar(@$combos),"\n";
 #warn Dumper $combos;
 my $score  = score($combos);
 #warn Dumper $score->{ [ sort keys $score ]->[-1] };
@@ -115,11 +114,10 @@ sub power { # Find the "non-overlapping powerset."
 
     # Decide if the powerset is to save or discard.
     while (my $collection = $power->next) {
-#    warn "C:@$collection\n";
+#        warn "C: @$collection\n";
 
         # Compare each item against the others.
-LOOP:
-        for my $i (0 .. @$collection - 1) {
+        LOOP: for my $i (0 .. @$collection - 1) {
 
             # Set the comparison mask.
             my $last = $collection->[$i];
@@ -130,10 +128,13 @@ LOOP:
                 my $mask = $collection->[$j];
 #                warn "\tP:$last v $mask\n";
 
+                # Skip this collection if an overlap is found.
                 if (not does_not_overlap($last, $mask)) {
 #                    warn "\t\tO:$last v $mask\n";
                     last LOOP;
                 }
+
+                # Save this collection if we are on the last pair.
                 if ($i == @$collection - 2 && $j == @$collection - 1) {
 #                    warn "\t\tE:$last v $mask\n";
                     push @$combos, $collection;
