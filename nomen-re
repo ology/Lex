@@ -127,34 +127,29 @@ sub power { # Find the "non-overlapping powerset."
 
     # Decide if the powerset is to save or discard.
     while (my $collection = $power->next) {
-#warn "C:@$collection\n";
+#    warn "C:@$collection\n";
 
         # Compare each item against the others.
-        my $last = '';
+LOOP:
         for my $i (0 .. @$collection - 1) {
-            next if $i < $posn;
-            # Set the current mask.
-            my $mask = $collection->[$i];
 
-            # First, have a pair of masks.
-            if (not $last) {
-#warn "\tP:$last v $mask\n";
-                $last = $mask;
-                next;
-            }
-            # Skip this collection if any pair overlap.
-            elsif (not does_not_overlap($last, $mask)) {
-#warn "\tO:$last v $mask\n";
-                last;
-            }
-            # Save this collection if we make it to the end.
-            elsif ($i == @$collection - 1) {
-#warn "\tE:$last v $mask\n";
-                push @$combos, $collection;
-            }
-            else {
-#warn "\tG:$last v $mask\n";
-                # TODO Reset $power minus $mask unless we've reached the last collection.
+            # Set the comparison mask.
+            my $last = $collection->[$i];
+
+            for my $j ($i + 1 .. @$collection - 1) {
+
+                # Set the current mask.
+                my $mask = $collection->[$j];
+#                warn "\tP:$last v $mask\n";
+
+                if (not does_not_overlap($last, $mask)) {
+#                    warn "\t\tO:$last v $mask\n";
+                    last LOOP;
+                }
+                if ($i == @$collection - 2 && $j == @$collection - 1) {
+#                    warn "\t\tE:$last v $mask\n";
+                    push @$combos, $collection;
+                }
             }
         }
     }
