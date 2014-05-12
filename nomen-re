@@ -21,25 +21,13 @@ for (<DATA>) {
 
 # Find the known word-part positions.
 my ($known, $mask_id) = get_knowns($word, $lex);
-#die Dumper
-#    $known,
-#    $mask_id,
-##
-#    map { $known->{$_}{part} }
-#        sort { $known->{$a}{span}[0] <=> $known->{$b}{span}[0]
-#            || $known->{$a}{span}[1] <=> $known->{$b}{span}[1] } keys %$known
-##
-#    map { $known->{$_}{part} => $known->{$_}{span} } keys %$known
-##
-#    map { "$_ => $mask_id->{$_}" } sort { $b <=> $a } keys %$mask_id
-#;
-
+#warn Dumper $known;
 my $combos = power($mask_id);
 #warn "C: ",scalar(@$combos),"\n";
 #warn Dumper $combos;
 my $score  = score($combos);
 #warn Dumper $score->{ [ sort keys $score ]->[-1] };
-warn Dumper $score;
+warn 'S: ',Dumper $score;
 
 sub score {
     # Get the list of combinations.
