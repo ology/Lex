@@ -133,7 +133,7 @@ sub power { # Find the "non-overlapping powerset."
                     last LOOP;
                 }
 
-                # Save this collection if we are on the last pair.
+                # Save this collection if we made it to the last pair.
                 if ($i == @$collection - 2 && $j == @$collection - 1) {
 #                    warn "\t\tE:$compare v $mask\n";
                     push @$combos, $collection;
