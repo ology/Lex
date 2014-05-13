@@ -112,7 +112,7 @@ sub power { # Find the "non-overlapping powerset."
     # Get a new powerset generator.
     my $power = Data::PowerSet->new(sort keys %$masks);
 
-    # Decide if the powerset is to save or discard.
+    # Decide if the powerset is to save or skip.
     while (my $collection = $power->next) {
 #        warn "C: @$collection\n";
 
