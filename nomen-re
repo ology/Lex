@@ -63,9 +63,7 @@ sub score {
             $count{unknownc} += $unknownc;
         }
         $val .= "$count{knowns}/$count{unknowns} + $count{knownc}/$count{unknownc} => "
-          . join( ', ', @{ reconstruct( $word, @$c ) } )
-#          . " => chunks:$knowns/$unknowns, chars:$knownc/$unknownc"
-        ;
+          . join( ', ', @{ reconstruct( $word, @$c ) } );
 
         push @{ $score->{$together} }, $val;
     }
