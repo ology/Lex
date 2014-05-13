@@ -25,8 +25,8 @@ my ($known, $mask_id) = get_knowns($word, $lex);
 my $combos = power($mask_id);
 #warn Dumper $combos;
 my $score  = score($combos);
+warn Dumper $score;
 #warn Dumper $score->{ [ sort keys $score ]->[-1] };
-warn 'S: ',Dumper $score;
 
 sub score {
     # Get the list of combinations.
@@ -50,7 +50,7 @@ sub score {
             knownc   => 0,
             unknownc => 0,
         );
-        my $val = "$scored: ";
+        my $val = '';
         for my $x ( reverse sort @$c ) {
             # Breakdown knowns vs unknowns and knowncharacters vs unknowncharacters.
             my $y = rle($x);
@@ -103,10 +103,11 @@ sub rle {
 }
 
 sub power { # Find the "non-overlapping powerset."
+
     # List if bitmasks.
     my $masks = shift;
 
-    # The bucket for our saved combinations.
+    # Bucket for our saved combinations.
     my $combos = [];
 
     # Get a new powerset generator.
