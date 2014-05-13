@@ -25,8 +25,8 @@ my ($known, $mask_id) = get_knowns($word, $lex);
 my $combos = power($mask_id);
 #warn Dumper $combos;
 my $score  = score($combos);
-warn Dumper $score;
-#warn Dumper $score->{ [ sort keys $score ]->[-1] };
+#warn Dumper $score;
+warn Dumper $score->{ [ sort keys $score ]->[-1] };
 
 sub score {
     # Get the list of combinations.
@@ -264,12 +264,15 @@ sub reconstruct {
 __DATA__
 a(?=\w) opposite
 ab(?=\w) away
+ant(?=\w) opposite
 bi(?=\w) two
 bio(?=\w) life
 (?<=\w)al type
 (?<=\w)ic belonging
 (?<=\w)ly like
 (?<=\w)log know
-(?<=\w)o(?=\w) combining
+(?<=\w)morph change
 (?<=\w)tic possessing
 (?<=\w)y like
+(?<=\w)i(?=\w) combining
+(?<=\w)o(?=\w) combining
