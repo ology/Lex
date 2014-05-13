@@ -111,11 +111,11 @@ sub power { # Find the "non-overlapping powerset."
     # Get a new powerset generator.
     my $power = Data::PowerSet->new(sort keys %$masks);
 
-    # Decide if the powerset is to save or skip.
+    # Consider each member of the powerset.. to save or skip?
     while (my $collection = $power->next) {
 #        warn "C: @$collection\n";
 
-        # Compare each item against the others.
+        # Compare each mask against the others.
         LOOP: for my $i (0 .. @$collection - 1) {
 
             # Set the comparison mask.
