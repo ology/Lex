@@ -43,7 +43,7 @@ helper json_data => sub {
     }
 };
 
-# Here we validate that every API request has a valid token
+# Validate that an API request has a valid token
 under sub {
     my $self = shift;
 
