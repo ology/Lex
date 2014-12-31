@@ -1,0 +1,149 @@
+#!/usr/bin/env perl
+
+use Mojolicious::Lite;
+use Mojo::JSON qw( decode_json encode_json );
+use DBI;
+
+# Global handle for db connections
+my $dbh;
+
+# Create db connection if needed
+helper db => sub {
+    if ( $dbh ) {
+        return $dbh;
+    }
+    else {
+        $dbh = DBI->connect( 'DBI:mysql:database=word_part;host=localhost', 'root', 'hahaharight' )
+            or die $DBI::errstr;
+        return $dbh;
+    }
+};
+
+# Disconnect db connection
+helper db_disconnect => sub {
+    my $self = shift;
+    $self->db->disconnect;
+    $dbh = "";  
+};
+
+# Here we validate that every API request has a valid token
+under sub {
+    my $self = shift;
+
+    my $token = $self->param('token');
+
+    my $sql = 'SELECT username FROM api_access WHERE token = ? AND active = 1';
+    my $sth = $self->db->prepare($sql);
+    $sth->execute($token);
+    my @username = $sth->fetchrow;
+    $sth->finish;
+
+    if ( $username[0] ) {
+        return 1;
+    }
+    else {
+        $self->render( text => 'Access denied' );
+        $self->db_disconnect;
+        return;
+    }
+};
+
+# curl http://127.0.0.1:3000/part/iso?token=ABC123
+get '/part/:affix' => sub {
+    my $self = shift;
+
+    my $affix = $self->stash('affix');
+
+    my $sql = 'SELECT * FROM fragment WHERE affix = ?';
+    my $sth = $self->db->prepare($sql);
+    $sth->execute($affix);
+    my @part = $sth->fetchrow;
+    $sth->finish;
+    $self->db_disconnect;
+
+    return $self->render( json => { data => \@part } );
+};
+
+# curl --data 'token=ABC123&json={"affix":"XXX","defn":"xyz","prefix":"(?<=\\w)"}' http://127.0.0.1:3000/add
+post '/add/' => sub {
+    my $self = shift;
+
+    my $json_data = $self->param('json');
+
+    my $json = Mojo::JSON->new;
+    my $hash = $json->decode($json_data);
+    my $err  = $json->error;
+    # Render any JSON error
+    if ( $err )
+    {
+        return $self->render( json => { result => 0, message => $err } );
+    }
+
+    # Convenience
+    my $prefix = $hash->{prefix};
+    my $affix  = $hash->{affix};
+    my $suffix = $hash->{suffix};
+    my $defn   = $hash->{defn};
+
+    my $sql = 'INSERT INTO fragment (prefix, affix, suffix, definition) VALUES (?, ?, ?, ?)';
+    my $sth = $self->db->prepare($sql);
+    $sth->execute( $prefix, $affix, $suffix, $defn );
+    my $new_id = $sth->{mysql_insertid};
+    $sth->finish;
+    $self->db_disconnect;
+
+    if ( $new_id )
+    {
+        return $self->render( json => { result => 1, message => 'OK' } );
+    }
+    else {
+        return $self->render( json => { result => 0, message => 'Insert Failure' } );
+    }
+};
+
+# curl -X PUT --data 'token=ABC123&json={"affix":"XXX","defn":"abc"}' http://127.0.0.1:3000/update
+put '/update/' => sub {
+    my $self = shift;
+
+    my $json_data = $self->param('json');
+
+    my $json = Mojo::JSON->new;
+    my $hash = $json->decode($json_data);
+    my $err  = $json->error;
+    # Render any JSON error
+    if ( $err )
+    {
+        return $self->render( json => { result => 0, message => $err } );
+    }
+
+    # Convenience
+    my $prefix = $hash->{prefix};
+    my $affix  = $hash->{affix};
+    my $suffix = $hash->{suffix};
+    my $defn   = $hash->{defn};
+
+    my $sql = 'UPDATE fragment SET prefix=?, affix=?, suffix=?, definition=? WHERE affix=?';
+    my $sth = $self->db->prepare($sql);
+    $sth->execute( $prefix, $affix, $suffix, $defn, $affix );
+    $sth->finish;
+    $self->db_disconnect;
+
+    return $self->render( json => { result => 1, message => 'OK' } );
+};
+
+# curl -X DELETE http://127.0.0.1:3000/delete/XXX?token=ABC123
+del '/delete/:affix' => sub {
+    my $self = shift;
+
+    my $affix = $self->stash('affix');
+
+    my $sql = 'DELETE FROM fragment WHERE affix=?';
+    my $sth = $self->db->prepare($sql);
+    $sth->execute($affix);
+    $sth->finish;
+    $self->db_disconnect;
+
+    return $self->render( json => { result => 1, message => 'OK' } );
+};
+
+app->start;
