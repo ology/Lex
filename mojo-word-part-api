@@ -13,7 +13,7 @@ helper db => sub {
         return $dbh;
     }
     else {
-        $dbh = DBI->connect( 'DBI:mysql:database=word_part;host=localhost', 'root', 'nope' )
+        $dbh = DBI->connect( 'DBI:mysql:database=word_part;host=localhost', 'root', 'abc123' )
             or die $DBI::errstr;
         return $dbh;
     }
@@ -71,9 +71,9 @@ get '/part/:affix' => sub {
 
     my $affix = $self->stash('affix');
 
-    my $sql = 'SELECT * FROM fragment WHERE affix = ?';
+    my $sql = "SELECT * FROM fragment WHERE affix like '%$affix%'";
     my $sth = $self->db->prepare($sql);
-    $sth->execute($affix);
+    $sth->execute();
     my @part = $sth->fetchrow;
     $sth->finish;
     $self->db_disconnect;
@@ -81,21 +81,19 @@ get '/part/:affix' => sub {
     return $self->render( json => { data => \@part } );
 };
 
-# curl --data 'token=ABC123&json={"affix":"XXX","defn":"xyz","prefix":"(?<=\\w)"}' http://127.0.0.1:3000/add
+# curl --data 'token=ABC123&json={"affix":"(?<=\\w)XXX","defn":"xyz"}' http://127.0.0.1:3000/add
 post '/add/' => sub {
     my $self = shift;
 
     my $hash = $self->json_data;
 
     # Convenience
-    my $prefix = $hash->{prefix};
-    my $affix  = $hash->{affix};
-    my $suffix = $hash->{suffix};
-    my $defn   = $hash->{defn};
+    my $affix = $hash->{affix};
+    my $defn  = $hash->{defn};
 
-    my $sql = 'INSERT INTO fragment (prefix, affix, suffix, definition) VALUES (?, ?, ?, ?)';
+    my $sql = 'INSERT INTO fragment (affix, definition) VALUES (?, ?)';
     my $sth = $self->db->prepare($sql);
-    $sth->execute( $prefix, $affix, $suffix, $defn );
+    $sth->execute( $affix, $defn );
     my $new_id = $sth->{mysql_insertid};
     $sth->finish;
     $self->db_disconnect;
@@ -116,14 +114,12 @@ put '/update/' => sub {
     my $hash = $self->json_data;
 
     # Convenience
-    my $prefix = $hash->{prefix};
-    my $affix  = $hash->{affix};
-    my $suffix = $hash->{suffix};
-    my $defn   = $hash->{defn};
+    my $affix = $hash->{affix};
+    my $defn  = $hash->{defn};
 
-    my $sql = 'UPDATE fragment SET prefix=?, affix=?, suffix=?, definition=? WHERE affix=?';
+    my $sql = 'UPDATE fragment SET affix=?, definition=? WHERE affix=?';
     my $sth = $self->db->prepare($sql);
-    $sth->execute( $prefix, $affix, $suffix, $defn, $affix );
+    $sth->execute( $affix, $defn, $affix );
     $sth->finish;
     $self->db_disconnect;
 
