@@ -13,7 +13,7 @@ helper db => sub {
         return $dbh;
     }
     else {
-        $dbh = DBI->connect( 'DBI:mysql:database=word_part;host=localhost', 'root', 'hahaharight' )
+        $dbh = DBI->connect( 'DBI:mysql:database=word_part;host=localhost', 'root', 'nope' )
             or die $DBI::errstr;
         return $dbh;
     }
@@ -24,6 +24,23 @@ helper db_disconnect => sub {
     my $self = shift;
     $self->db->disconnect;
     $dbh = "";  
+};
+
+# Return a hash from a json string
+helper json_data => sub {
+    my $self = shift;
+    my $json_data = $self->param('json');
+    my $json = Mojo::JSON->new;
+    my $hash = $json->decode($json_data);
+    my $err  = $json->error;
+    if ( $err )
+    {
+        return $self->render( json => { result => 0, message => $err } );
+    }
+    else
+    {
+        return $hash;
+    }
 };
 
 # Here we validate that every API request has a valid token
@@ -68,16 +85,7 @@ get '/part/:affix' => sub {
 post '/add/' => sub {
     my $self = shift;
 
-    my $json_data = $self->param('json');
-
-    my $json = Mojo::JSON->new;
-    my $hash = $json->decode($json_data);
-    my $err  = $json->error;
-    # Render any JSON error
-    if ( $err )
-    {
-        return $self->render( json => { result => 0, message => $err } );
-    }
+    my $hash = $self->json_data;
 
     # Convenience
     my $prefix = $hash->{prefix};
@@ -105,16 +113,7 @@ post '/add/' => sub {
 put '/update/' => sub {
     my $self = shift;
 
-    my $json_data = $self->param('json');
-
-    my $json = Mojo::JSON->new;
-    my $hash = $json->decode($json_data);
-    my $err  = $json->error;
-    # Render any JSON error
-    if ( $err )
-    {
-        return $self->render( json => { result => 0, message => $err } );
-    }
+    my $hash = $self->json_data;
 
     # Convenience
     my $prefix = $hash->{prefix};
