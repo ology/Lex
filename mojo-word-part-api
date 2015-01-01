@@ -121,11 +121,17 @@ put '/update/' => sub {
 
     my $sql = 'UPDATE fragment SET affix=?, definition=? etymology=? WHERE affix=?';
     my $sth = $self->db->prepare($sql);
-    $sth->execute( $affix, $defn, $affix, $etym );
+    my $rv = $sth->execute( $affix, $defn, $affix, $etym );
     $sth->finish;
     $self->db_disconnect;
 
-    return $self->render( json => { result => 1, message => 'OK' } );
+    if ( $rv )
+    {
+        return $self->render( json => { result => 1, message => 'OK' } );
+    }
+    else {
+        return $self->render( json => { result => 0, message => 'Update Failure' } );
+    }
 };
 
 # curl -X DELETE http://127.0.0.1:3000/delete/XXX?token=ABC123
@@ -136,11 +142,17 @@ del '/delete/:affix' => sub {
 
     my $sql = 'DELETE FROM fragment WHERE affix=?';
     my $sth = $self->db->prepare($sql);
-    $sth->execute($affix);
+    my $rv = $sth->execute($affix);
     $sth->finish;
     $self->db_disconnect;
 
-    return $self->render( json => { result => 1, message => 'OK' } );
+    if ( $rv )
+    {
+        return $self->render( json => { result => 1, message => 'OK' } );
+    }
+    else {
+        return $self->render( json => { result => 0, message => 'Delete Failure' } );
+    }
 };
 
 app->start;
