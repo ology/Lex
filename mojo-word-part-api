@@ -81,7 +81,7 @@ get '/part/:affix' => sub {
     return $self->render( json => { data => \@part } );
 };
 
-# curl --data 'token=ABC123&json={"affix":"(?<=\\w)XXX","defn":"xyz"}' http://127.0.0.1:3000/add
+# curl --data 'token=ABC123&json={"affix":"XXX","defn":"xyz"}' http://127.0.0.1:3000/add
 post '/add/' => sub {
     my $self = shift;
 
@@ -90,10 +90,11 @@ post '/add/' => sub {
     # Convenience
     my $affix = $hash->{affix};
     my $defn  = $hash->{defn};
+    my $etym  = $hash->{etym};
 
-    my $sql = 'INSERT INTO fragment (affix, definition) VALUES (?, ?)';
+    my $sql = 'INSERT INTO fragment (affix, definition, etymology) VALUES (?, ?, ?)';
     my $sth = $self->db->prepare($sql);
-    $sth->execute( $affix, $defn );
+    $sth->execute( $affix, $defn, $etym );
     my $new_id = $sth->{mysql_insertid};
     $sth->finish;
     $self->db_disconnect;
@@ -116,10 +117,11 @@ put '/update/' => sub {
     # Convenience
     my $affix = $hash->{affix};
     my $defn  = $hash->{defn};
+    my $etym  = $hash->{etym};
 
-    my $sql = 'UPDATE fragment SET affix=?, definition=? WHERE affix=?';
+    my $sql = 'UPDATE fragment SET affix=?, definition=? etymology=? WHERE affix=?';
     my $sth = $self->db->prepare($sql);
-    $sth->execute( $affix, $defn, $affix );
+    $sth->execute( $affix, $defn, $affix, $etym );
     $sth->finish;
     $self->db_disconnect;
 
