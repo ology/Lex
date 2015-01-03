@@ -79,7 +79,7 @@ get '/part/:affix' => sub {
     $self->db_disconnect;
 
     if ( @part ) {
-        return $self->render( json => { part => \@part } );
+        return $self->render( json => { result => 1, part => \@part } );
     }
     else {
         return $self->render( json => { result => 0, message => 'No such part' } );
