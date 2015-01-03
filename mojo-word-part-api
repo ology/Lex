@@ -156,3 +156,13 @@ del '/delete/:affix' => sub {
 };
 
 app->start;
+
+sub db_exec
+{
+    my ( $self, $sql, @binds ) = @_;
+    my $sth = $self->db->prepare($sql);
+    my $rv = $sth->execute(@binds);
+    $sth->finish;
+    $self->db_disconnect;
+    return $rv;
+}
