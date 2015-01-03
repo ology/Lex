@@ -52,10 +52,10 @@ under sub {
     my $sql = 'SELECT username FROM api_access WHERE token = ? AND active = 1';
     my $sth = $self->db->prepare($sql);
     $sth->execute($token);
-    my @username = $sth->fetchrow;
+    my ($username) = $sth->fetchrow;
     $sth->finish;
 
-    if ( $username[0] ) {
+    if ( $username ) {
         return 1;
     }
     else {
