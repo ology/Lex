@@ -220,7 +220,11 @@ __DATA__
 <body>
 <form>
 <input type="hidden" name="id" value="<%= $id %>"/>
+<input type="checkbox" name="prefix"/>
 <input type="text" name="affix" value="<%= $affix %>"/>
+<input type="checkbox" name="suffix"/>
+<input type="text" name="definition" value="<%= $definition %>"/>
+<input type="text" name="etymology" value="<%= $etymology %>"/>
 </form>
 </body>
 </html>
