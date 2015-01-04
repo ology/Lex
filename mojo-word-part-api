@@ -214,13 +214,13 @@ __DATA__
 <html>
 <head><title>Edit a Fragment</title></head>
 <body>
-<form action="/add/">
+<form action="/add/" method="post">
 <input type="hidden" name="id" value="<%= $id %>"/>
-<input type="checkbox" name="prefix"/>
-<input type="text" name="affix" value="<%= $affix %>"/>
-<input type="checkbox" name="suffix"/>
-<input type="text" name="defn" value="<%= $definition %>"/>
-<input type="text" name="etym" value="<%= $etymology %>"/>
+Follows: <input type="checkbox" name="prefix"/>
+Affix: <input type="text" name="affix" value="<%= $affix %>"/>
+Precedes: <input type="checkbox" name="suffix"/>
+Defn: <input type="text" name="defn" value="<%= $definition %>"/>
+Etym: <input type="text" name="etym" value="<%= $etymology %>"/>
 <input type="submit" name="add" value="Submit"/>
 </form>
 </body>
