@@ -65,8 +65,8 @@ under sub {
     }
 };
 
-# curl http://127.0.0.1:3000/part/iso?token=ABC123
-get '/part/:affix' => sub {
+# curl http://127.0.0.1:3000/affix/fug?token=ABC123
+get '/affix/:affix' => sub {
     my $self = shift;
 
     my $affix = $self->stash('affix');
