@@ -199,6 +199,9 @@ get '/edit/:id' => sub {
     $sth->finish;
     $self->db_disconnect;
 
+    $self->stash( affix => '' );
+    $self->stash( definition => '' );
+    $self->stash( etymology => '' );
     my ($p) = values %$part;
     $self->stash( $_ => $p->{$_} ) for keys %$p;
 
