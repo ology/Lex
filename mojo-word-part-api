@@ -106,14 +106,15 @@ get '/defn/:defn' => sub {
 post '/add/' => sub {
     my $self = shift;
 
-    my $hash = $self->json_data;
+    my $hash;
+    $hash = $self->json_data if $self->param('json');
 
     # Convenience
-    my $prefix = $hash->{prefix};
-    my $affix  = $hash->{affix};
-    my $suffix = $hash->{suffix};
-    my $defn   = $hash->{defn};
-    my $etym   = $hash->{etym};
+    my $prefix = $hash->{prefix} || $self->param('prefix');
+    my $affix  = $hash->{affix} || $self->param('affix');
+    my $suffix = $hash->{suffix} || $self->param('suffix');
+    my $defn   = $hash->{defn} || $self->param('defn');
+    my $etym   = $hash->{etym} || $self->param('etym');
 
     $affix = '(?<=\\w)' . $affix if $prefix;
     $affix = $affix . '(?=\\w)' if $suffix;
@@ -202,8 +203,14 @@ get '/edit/:id' => sub {
     $self->stash( affix => '' );
     $self->stash( definition => '' );
     $self->stash( etymology => '' );
+    $self->stash( method => 'add' );
+    $self->stash( method => 'add' );
     my ($p) = values %$part;
-    $self->stash( $_ => $p->{$_} ) for keys %$p;
+    if ( keys %$part )
+    {
+        $self->stash( $_ => $p->{$_} ) for keys %$p;
+        $self->stash( method => 'update' );
+    }
 
     $self->render('edit');
 #    return $self->render( json => $x );
@@ -217,7 +224,8 @@ __DATA__
 <html>
 <head><title>Edit a Fragment</title></head>
 <body>
-<form action="/add/" method="post">
+<form action="/<%= $method %>/" method="post">
+<input type="hidden" name="token" value="ABC123"/>
 <input type="hidden" name="id" value="<%= $id %>"/>
 Follows: <input type="checkbox" name="prefix"/>
 Affix: <input type="text" name="affix" value="<%= $affix %>"/>
