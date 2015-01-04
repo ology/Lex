@@ -134,7 +134,7 @@ post '/add/' => sub {
     }
 };
 
-# curl -X PUT --data 'token=ABC123&json={"affix":"XXX","defn":"abc"}' http://127.0.0.1:3000/update
+# curl -X PUT --data 'token=ABC123&json={"id":"942","affix":"XXX","defn":"abc"}' http://127.0.0.1:3000/update
 put '/update/' => sub {
     my $self = shift;
 
@@ -166,8 +166,8 @@ put '/update/' => sub {
     }
 };
 
-# curl -X DELETE http://127.0.0.1:3000/delete/XXX?token=ABC123
-del '/delete/:affix' => sub {
+# curl -X DELETE http://127.0.0.1:3000/delete/42?token=ABC123
+del '/delete/:id' => sub {
     my $self = shift;
 
     my $id = $self->stash('id');
