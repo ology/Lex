@@ -65,8 +65,8 @@ under sub {
     }
 };
 
-# curl http://127.0.0.1:3000/part/iso?token=ABC123
-get '/part/:affix' => sub {
+# curl http://127.0.0.1:3000/affix/fug?token=ABC123
+get '/affix/:affix' => sub {
     my $self = shift;
 
     my $affix = $self->stash('affix');
@@ -74,17 +74,32 @@ get '/part/:affix' => sub {
     my $sql = 'SELECT * FROM fragment WHERE affix LIKE ?';
     my $sth = $self->db->prepare($sql);
     $sth->execute( '%'.$affix.'%' );
-    my @part = $sth->fetchrow;
+    my $part = $sth->fetchall_arrayref;
     $sth->finish;
     $self->db_disconnect;
 
-    if ( @part ) {
-        return $self->render( json => { result => 1, part => \@part } );
+    if ( @$part ) {
+        return $self->render( json => { part => $part } );
     }
     else {
         return $self->render( json => { result => 0, message => 'No such part' } );
     }
-        
+};
+
+# curl http://127.0.0.1:3000/defn/stun?token=ABC123
+get '/defn/:defn' => sub {
+    my $self = shift;
+
+    my $defn = $self->stash('defn');
+
+    my $sql = 'SELECT * FROM fragment WHERE definition LIKE ?';
+    my $sth = $self->db->prepare($sql);
+    $sth->execute( '%'.$defn.'%' );
+    my $part = $sth->fetchall_arrayref;
+    $sth->finish;
+    $self->db_disconnect;
+
+    return $self->render( json => { part => $part } );
 };
 
 # curl --data 'token=ABC123&json={"affix":"XXX","defn":"xyz"}' http://127.0.0.1:3000/add
@@ -94,9 +109,14 @@ post '/add/' => sub {
     my $hash = $self->json_data;
 
     # Convenience
-    my $affix = $hash->{affix};
-    my $defn  = $hash->{defn};
-    my $etym  = $hash->{etym};
+    my $prefix = $hash->{prefix};
+    my $affix  = $hash->{affix};
+    my $suffix = $hash->{suffix};
+    my $defn   = $hash->{defn};
+    my $etym   = $hash->{etym};
+
+    $affix = '(?<=\\w)' . $affix if $prefix;
+    $affix = $affix . '(?=\\w)' if $suffix;
 
     my $sql = 'INSERT INTO fragment (affix, definition, etymology) VALUES (?, ?, ?)';
     my $sth = $self->db->prepare($sql);
@@ -121,9 +141,14 @@ put '/update/' => sub {
     my $hash = $self->json_data;
 
     # Convenience
-    my $affix = $hash->{affix};
-    my $defn  = $hash->{defn};
-    my $etym  = $hash->{etym};
+    my $prefix = $hash->{prefix};
+    my $affix  = $hash->{affix};
+    my $suffix = $hash->{suffix};
+    my $defn   = $hash->{defn};
+    my $etym   = $hash->{etym};
+
+    $affix = '(?<=\\w)' . $affix if $prefix;
+    $affix = $affix . '(?=\\w)' if $suffix;
 
     my $sql = 'UPDATE fragment SET affix=?, definition=? etymology=? WHERE affix=?';
     my $sth = $self->db->prepare($sql);
@@ -161,4 +186,19 @@ del '/delete/:affix' => sub {
     }
 };
 
+get '/edit' => sub {
+    my $c = shift;
+    $c->render('edit');
+};
+
 app->start;
+__DATA__
+
+@@ edit.html.ep
+<!DOCTYPE html>
+<html>
+<head><title>Edit a Fragment</title></head>
+<body>
+Nothing to see here. Move along.
+</body>
+</html>
