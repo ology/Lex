@@ -199,12 +199,8 @@ get '/edit/:id' => sub {
     $sth->finish;
     $self->db_disconnect;
 
-    my ($x) = values %$part;
-
-    for my $p ( keys %$x )
-    {
-        $self->stash( $p => $x->{$p} );
-    }
+    my ($p) = values %$part;
+    $self->stash( $_ => $p->{$_} ) for keys %$p;
 
     $self->render('edit');
 #    return $self->render( json => $x );
