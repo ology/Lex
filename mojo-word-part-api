@@ -141,6 +141,7 @@ put '/update/' => sub {
     my $hash = $self->json_data;
 
     # Convenience
+    my $id     = $hash->{id};
     my $prefix = $hash->{prefix};
     my $affix  = $hash->{affix};
     my $suffix = $hash->{suffix};
@@ -150,9 +151,9 @@ put '/update/' => sub {
     $affix = '(?<=\\w)' . $affix if $prefix;
     $affix = $affix . '(?=\\w)' if $suffix;
 
-    my $sql = 'UPDATE fragment SET affix=?, definition=? etymology=? WHERE affix=?';
+    my $sql = 'UPDATE fragment SET affix=?, definition=? etymology=? WHERE id=?';
     my $sth = $self->db->prepare($sql);
-    my $rv = $sth->execute( $affix, $defn, $affix, $etym );
+    my $rv = $sth->execute( $affix, $defn, $etym, $id );
     $sth->finish;
     $self->db_disconnect;
 
