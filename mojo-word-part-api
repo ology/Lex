@@ -13,7 +13,7 @@ helper db => sub {
         return $dbh;
     }
     else {
-        $dbh = DBI->connect( 'DBI:mysql:database=word_part;host=localhost', 'root', 'abc123' )
+        $dbh = DBI->connect( 'DBI:mysql:database=word_part;host=localhost', 'root', 'aws314!' )
             or die $DBI::errstr;
         return $dbh;
     }
@@ -187,9 +187,27 @@ del '/delete/:id' => sub {
     }
 };
 
-get '/edit' => sub {
-    my $c = shift;
-    $c->render('edit');
+get '/edit/:id' => sub {
+    my $self = shift;
+
+    my $id = $self->stash('id');
+
+    my $sql = 'SELECT * FROM fragment WHERE id = ?';
+    my $sth = $self->db->prepare($sql);
+    $sth->execute($id);
+    my $part = $sth->fetchall_hashref('id');
+    $sth->finish;
+    $self->db_disconnect;
+
+    my ($x) = values %$part;
+
+    for my $p ( keys %$x )
+    {
+        $self->stash( $p => $x->{$p} );
+    }
+
+    $self->render('edit');
+#    return $self->render( json => $x );
 };
 
 app->start;
@@ -200,6 +218,9 @@ __DATA__
 <html>
 <head><title>Edit a Fragment</title></head>
 <body>
-Nothing to see here. Move along.
+<form>
+<input type="hidden" name="id" value="<%= $id %>"/>
+<input type="text" name="affix" value="<%= $affix %>"/>
+</form>
 </body>
 </html>
