@@ -176,4 +176,18 @@ del '/delete/:affix' => sub {
     }
 };
 
+get '/edit' => sub {
+    my $c = shift;
+    $c->render('edit');
+};
+
 app->start;
+__DATA__
+
+@@ edit.html.ep
+<!DOCTYPE html>
+<html>
+<head><title>Edit a Fragment</title></head>
+<body>
+</body>
+</html>
