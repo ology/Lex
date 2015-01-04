@@ -127,7 +127,7 @@ post '/add/' => sub {
 
     if ( $new_id )
     {
-        return $self->render( json => { result => 1, message => 'OK' } );
+        return $self->render( json => { result => 1, message => 'OK', message => "Added id: $new_id" } );
     }
     else {
         return $self->render( json => { result => 0, message => 'Insert Failure' } );
@@ -233,9 +233,11 @@ Defn: <input type="text" name="defn" value="<%= $definition %>"/>
 Etym: <input type="text" name="etym" value="<%= $etymology %>"/>
 <input type="submit" name="add" value="Submit"/>
 </form>
-<form action="/delete/<%= $id %>" method="post">
+<!--
+<form action="/delete/<%= $id %>" method="delete">
 <input type="hidden" name="token" value="ABC123"/>
 <input type="submit" name="delete" value="Delete"/>
 </form>
+-->
 </body>
 </html>
