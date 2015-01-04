@@ -170,11 +170,11 @@ put '/update/' => sub {
 del '/delete/:affix' => sub {
     my $self = shift;
 
-    my $affix = $self->stash('affix');
+    my $id = $self->stash('id');
 
-    my $sql = 'DELETE FROM fragment WHERE affix=?';
+    my $sql = 'DELETE FROM fragment WHERE id=?';
     my $sth = $self->db->prepare($sql);
-    my $rv = $sth->execute($affix);
+    my $rv = $sth->execute($id);
     $sth->finish;
     $self->db_disconnect;
 
