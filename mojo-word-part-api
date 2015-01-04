@@ -86,6 +86,22 @@ get '/affix/:affix' => sub {
     }
 };
 
+# curl http://127.0.0.1:3000/defn/stun?token=ABC123
+get '/defn/:defn' => sub {
+    my $self = shift;
+
+    my $defn = $self->stash('defn');
+
+    my $sql = 'SELECT * FROM fragment WHERE definition LIKE ?';
+    my $sth = $self->db->prepare($sql);
+    $sth->execute( '%'.$defn.'%' );
+    my $part = $sth->fetchall_arrayref;
+    $sth->finish;
+    $self->db_disconnect;
+
+    return $self->render( json => { part => $part } );
+};
+
 # curl --data 'token=ABC123&json={"affix":"XXX","defn":"xyz"}' http://127.0.0.1:3000/add
 post '/add/' => sub {
     my $self = shift;
