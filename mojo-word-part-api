@@ -79,7 +79,7 @@ get '/affix/:affix' => sub {
     $self->db_disconnect;
 
     if ( @$part ) {
-        return $self->render( json => { part => \@part } );
+        return $self->render( json => { part => $part } );
     }
     else {
         return $self->render( json => { result => 0, message => 'No such part' } );
@@ -109,9 +109,14 @@ post '/add/' => sub {
     my $hash = $self->json_data;
 
     # Convenience
-    my $affix = $hash->{affix};
-    my $defn  = $hash->{defn};
-    my $etym  = $hash->{etym};
+    my $prefix = $hash->{prefix};
+    my $affix  = $hash->{affix};
+    my $suffix = $hash->{suffix};
+    my $defn   = $hash->{defn};
+    my $etym   = $hash->{etym};
+
+    $affix = '(?<=\\w)' . $affix if $prefix;
+    $affix = $affix . '(?=\\w)' if $suffix;
 
     my $sql = 'INSERT INTO fragment (affix, definition, etymology) VALUES (?, ?, ?)';
     my $sth = $self->db->prepare($sql);
