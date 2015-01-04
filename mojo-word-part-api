@@ -52,10 +52,10 @@ under sub {
     my $sql = 'SELECT username FROM api_access WHERE token = ? AND active = 1';
     my $sth = $self->db->prepare($sql);
     $sth->execute($token);
-    my @username = $sth->fetchrow;
+    my ($username) = $sth->fetchrow;
     $sth->finish;
 
-    if ( $username[0] ) {
+    if ( $username ) {
         return 1;
     }
     else {
@@ -78,7 +78,12 @@ get '/part/:affix' => sub {
     $sth->finish;
     $self->db_disconnect;
 
-    return $self->render( json => { part => $part } );
+    if ( @$part ) {
+        return $self->render( json => { part => \@part } );
+    }
+    else {
+        return $self->render( json => { result => 0, message => 'No such part' } );
+    }
 };
 
 # curl --data 'token=ABC123&json={"affix":"XXX","defn":"xyz"}' http://127.0.0.1:3000/add
