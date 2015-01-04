@@ -127,15 +127,19 @@ post '/add/' => sub {
 
     if ( $new_id )
     {
-        return $self->render( json => { result => 1, message => 'OK' );
+        return $self->render( json => { result => 1, message => 'OK' } );
     }
     else {
         return $self->render( json => { result => 0, message => 'Insert Failure' } );
     }
 };
 
-# curl -X PUT --data 'token=ABC123&json={"id":"942","affix":"XXX","defn":"abc"}' http://127.0.0.1:3000/update
-put '/update/' => sub {
+# curl -X PUT --data 'token=ABC123&json={"id":"942","affix":"XXX","defn":"abc"}' http://127.0.0.1:3000/put
+put '/put/' => sub {
+    my $self = shift;
+    return $self->redirect_to('update');
+};
+post '/update/' => sub {
     my $self = shift;
 
     my $hash;
@@ -166,8 +170,12 @@ put '/update/' => sub {
     }
 };
 
-# curl -X DELETE http://127.0.0.1:3000/delete/42?token=ABC123
-del '/delete/:id' => sub {
+# curl -X DELETE http://127.0.0.1:3000/del/42?token=ABC123
+del '/del/' => sub {
+    my $self = shift;
+    return $self->redirect_to('delete');
+};
+post '/delete/:id' => sub {
     my $self = shift;
 
     my $id = $self->stash('id');
