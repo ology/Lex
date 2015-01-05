@@ -13,7 +13,7 @@ helper db => sub {
         return $dbh;
     }
     else {
-        $dbh = DBI->connect( 'DBI:mysql:database=word_part;host=localhost', 'root', 'aws314!' )
+        $dbh = DBI->connect( 'DBI:mysql:database=word_part;host=localhost', 'root', 'abc123' )
             or die $DBI::errstr;
         return $dbh;
     }
@@ -134,7 +134,7 @@ post '/add/' => sub {
     }
 };
 
-# curl -X PUT --data 'token=ABC123&json={"id":"942","affix":"XXX","defn":"abc"}' http://127.0.0.1:3000/put
+# curl -X PUT --data 'token=ABC123&json={"id":"942","affix":"XXX","defn":"abc","etym":"foo"}' http://127.0.0.1:3000/put
 put '/update/' => sub {
     my $self = shift;
 
@@ -231,12 +231,12 @@ Affix: <input type="text" name="affix" value="<%= $affix %>"/>
 Precedes: <input type="checkbox" name="suffix"/>
 Defn: <input type="text" name="defn" value="<%= $definition %>"/>
 Etym: <input type="text" name="etym" value="<%= $etymology %>"/>
-<input type="submit" name="add" value="Submit"/>
+<input type="submit" name="<%= $method %>" value="<%= $method %>"/>
 </form>
 <!--
 <form action="/delete/<%= $id %>" method="delete">
 <input type="hidden" name="token" value="ABC123"/>
-<input type="submit" name="delete" value="Delete"/>
+<input type="submit" name="delete" value="delete"/>
 </form>
 -->
 </body>
