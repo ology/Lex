@@ -187,6 +187,7 @@ del '/delete/:id' => sub {
     }
 };
 
+# http://127.0.0.1:3000/edit/1?token=ABC123
 get '/edit/:id' => sub {
     my $self = shift;
 
@@ -202,7 +203,6 @@ get '/edit/:id' => sub {
     $self->stash( affix => '' );
     $self->stash( definition => '' );
     $self->stash( etymology => '' );
-    $self->stash( method => 'add' );
     $self->stash( method => 'add' );
     my ($p) = values %$part;
     if ( keys %$part )
