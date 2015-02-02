@@ -1,0 +1,388 @@
+package MojoAPI;
+
+=head1 Mojolicious::Lite RESTful CRUD
+
+=head1 Data Model
+
+=begin text
+
+affix       definition              etymology
+---------------------------------------------
+ab          from, away              latin
+bio         life                    greek
+o           combining               NULL
+ortho       straight, right angles  greek
+phile?      loving, thriving        greek
+ic          belonging               greek
+...
+
+=end text
+
+"orthophilic" - belonging or thriving at right angles
+
+L<http://ec2-54-186-198-74.us-west-2.compute.amazonaws.com/parse/?word=orthophilic>
+
+=head1 REST
+
+=begin html
+
+<img src="/Users/gene/sandbox/Lex/MojoAPI/pix/REST.jpg"/ style="float:right">
+
+=end html
+
+"Representational State Transfer"
+
+Architectural style of networked systems
+
+I<Representation> of a web resource places the client in a I<state>
+
+The client application changes (I<transfers>) I<state> with each resource
+I<representation>
+
+=head1 REST (cont.)
+
+While REST is not a standard, it does use standards:
+
+=over 4
+
+=item HTTP
+
+=item URL
+
+=item Resource representations like XML, HTML, GIF, JPEG
+
+=item MIME types like text/xml, text/html, image/gif, image/jpeg
+
+=back
+
+=head1 REST (cont.)
+
+=begin html
+
+<img src="/Users/gene/sandbox/Lex/MojoAPI/pix/animal.jpg"/ style="float:right">
+
+=end html
+
+Verb - Behavior
+
+=over 4
+
+=item get - Select a record
+
+=item post - Insert a record
+
+=item put - Update a record
+
+=item del - Delete a record
+
+=back
+
+=head1 get
+
+=begin text
+
+# curl http://127.0.0.1:3000/affix/fug?token=ABC123
+
+get '/affix/:affix' => sub {
+    my $self = shift;
+
+    my $affix = $self->stash('affix');
+
+    my $sql = 'SELECT * FROM fragment WHERE affix LIKE ?';
+    my $sth = $self->db->prepare($sql);
+    $sth->execute( '%'.$affix.'%' );
+    my $part = $sth->fetchall_arrayref;
+    $sth->finish;
+    $self->db_disconnect;
+
+    if ( @$part ) {
+        return $self->render( json => { part => $part } );
+    }
+    else {
+        return $self->render( json => { result => 0, message => 'No such part' } );
+    }
+};
+
+=end text
+
+=head1 get by definition
+
+=begin text
+
+# curl http://127.0.0.1:3000/defn/stun?token=ABC123
+
+get '/defn/:defn' => sub {
+    my $self = shift;
+
+    my $defn = $self->stash('defn');
+
+    my $sql = 'SELECT * FROM fragment WHERE definition LIKE ?';
+    my $sth = $self->db->prepare($sql);
+    $sth->execute( '%'.$defn.'%' );
+    my $part = $sth->fetchall_arrayref;
+    $sth->finish;
+    $self->db_disconnect;
+
+    if ( @$part ) {
+        return $self->render( json => { part => $part } );
+    }
+    else {
+        return $self->render( json => { result => 0, message => 'No such definition' } );
+    }
+};
+
+=end text
+
+=head1 post
+
+=begin text
+
+# curl --data 'token=ABC123&json={"affix":"XXX","defn":"xyz"}' http://127.0.0.1:3000/add
+
+post '/add/' => sub {
+    my $self = shift;
+
+    ...
+
+    my $sql = 'INSERT INTO fragment (affix, definition, etymology) VALUES (?, ?, ?)';
+    my $sth = $self->db->prepare($sql);
+    $sth->execute( $affix, $defn, $etym );
+    my $new_id = $sth->{mysql_insertid};
+    $sth->finish;
+    $self->db_disconnect;
+
+    if ( $new_id )
+    {
+        return $self->render( json => { result => 1, message => 'OK' } );
+    }
+    else {
+        return $self->render( json => { result => 0, message => 'Insert Failure' } );
+    }
+};
+
+=end text
+
+=head1 put
+
+=begin text
+
+# curl -X PUT --data 'token=ABC123&json={"id":"942","affix":"XXX","defn":"abc","etym":"foo"}' http://127.0.0.1:3000/update
+
+put '/update/' => sub {
+    my $self = shift;
+
+    ...
+
+    my $sql = 'UPDATE fragment SET affix=?, definition=?, etymology=? WHERE id=?';
+    my $sth = $self->db->prepare($sql);
+    my $rv = $sth->execute( $affix, $defn, $etym, $id );
+    $sth->finish;
+    $self->db_disconnect;
+
+    if ( $rv )
+    {
+        return $self->render( json => { result => 1, message => 'OK' } );
+    }
+    else {
+        return $self->render( json => { result => 0, message => 'Update Failure' } );
+    }
+};
+
+=end text
+
+=head1 del
+
+=begin text
+
+# curl -X DELETE http://127.0.0.1:3000/delete/42?token=ABC123
+
+del '/delete/:id' => sub {
+    my $self = shift;
+
+    my $id = $self->stash('id');
+
+    my $sql = 'DELETE FROM fragment WHERE id=?';
+    my $sth = $self->db->prepare($sql);
+    my $rv = $sth->execute($id);
+    $sth->finish;
+    $self->db_disconnect;
+
+    if ( $rv )
+    {
+        return $self->render( json => { result => 1, message => 'OK' } );
+    }
+    else {
+        return $self->render( json => { result => 0, message => 'Delete Failure' } );
+    }
+};
+
+=end text
+
+=head1 Authorization
+
+=begin text
+
+under sub {
+   my $self = shift;
+
+   my $token = $self->param('token');
+
+   my $sql = 'SELECT username FROM api_access WHERE token=? AND active=1';
+   my $sth = $self->db->prepare($sql);
+   $sth->execute($token);
+   my ($username) = $sth->fetchrow;
+   $sth->finish;
+
+   if ($username)
+   {
+      return 1;
+   }
+   else {
+      $self->render( text => 'Access denied' );
+      $self->db_disconnect;
+      return;
+   }
+};
+
+=end text
+
+=head1 Helper Methods
+
+=begin text
+
+my $dbh; # Global handle
+
+helper db => sub {
+   if ( $dbh ) {
+     return $dbh;
+   }
+   else {
+     $dbh = DBI->connect( 'DBI:mysql:database=word_part;host=localhost', 'root', 'abc123' )
+       or die $DBI::errstr;
+     return $dbh;
+   }
+};
+
+helper db_disconnect => sub {
+   my $self = shift;
+   $self->db->disconnect;
+   $dbh = "";
+};
+
+=end text
+
+=head1 Methods (cont.)
+
+Call a helper as an object method:
+
+=begin text
+
+get '/part/:affix' => sub {
+   ...
+   $self->db_disconnect;
+   ...
+
+post '/add/' => sub {
+    ...
+    my $hash;
+    $hash = $self->json_data if $self->param('json');
+    my $affix  = $hash->{affix}  || $self->param('affix');
+    ...
+
+=end text
+
+=head1 Web Enable
+
+=begin html
+
+<img src="/Users/gene/sandbox/Lex/MojoAPI/pix/Unicorn.jpg"/ style="float:right">
+
+=end html
+
+I<put> and I<del> become I<post>s
+
+I<edit> Route & Template
+
+=head1 edit
+
+=begin text
+
+# http://127.0.0.1:3000/edit/1?token=ABC123
+
+get '/edit/:id' => sub {
+    my $self = shift;
+
+    my $id = $self->stash('id');
+
+    my $sql = 'SELECT * FROM fragment WHERE id = ?';
+    my $sth = $self->db->prepare($sql);
+    $sth->execute($id);
+    my $part = $sth->fetchall_hashref('id');
+    $sth->finish;
+    $self->db_disconnect;
+
+    $self->stash( affix => '' );
+    $self->stash( definition => '' );
+    $self->stash( etymology => '' );
+    $self->stash( method => 'add' );
+    my ($p) = values %$part;
+    if ( keys %$part )
+    {
+        $self->stash( $_ => $p->{$_} ) for keys %$p;
+        $self->stash( method => 'update' );
+    }
+
+    $self->render('edit');
+};
+
+=end text
+
+=head1 edit Template
+
+=begin text
+
+__DATA__
+
+@@ edit.html.ep
+<!DOCTYPE html>
+<html>
+<head><title>Edit a Fragment</title></head>
+<body>
+<form action="/<%= $method %>/" method="post">
+<input type="hidden" name="token" value="ABC123"/>
+<input type="hidden" name="id" value="<%= $id %>"/>
+Follows: <input type="checkbox" name="prefix"/>
+Affix: <input type="text" name="affix" value="<%= $affix %>"/>
+Precedes: <input type="checkbox" name="suffix"/>
+Defn: <input type="text" name="defn" value="<%= $definition %>"/>
+Etym: <input type="text" name="etym" value="<%= $etymology %>"/>
+<input type="submit" name="<%= $method %>" value="<%= $method %>"/>
+</form>
+<!--
+<form action="/delete/<%= $id %>" method="delete">
+<input type="hidden" name="token" value="ABC123"/>
+<input type="submit" name="delete" value="delete"/>
+</form>
+-->
+</body>
+</html>
+
+=end text
+
+=head1 Links
+
+Logic lifted from here:
+
+L<http://code-tricks.com/build-a-simple-restful-api-using-mojolicious>
+
+The code behind this presentation:
+
+L<https://github.com/ology/Lex/blob/master/mojo-word-part-api>
+
+Building web services the REST way:
+
+L<http://www.xfront.com/REST-Web-Services.html>
+
+=cut
+
+1;
