@@ -303,6 +303,8 @@ I<put> and I<del> become I<post>s
 
 I<edit> Route & Template
 
+Could use the LWP::UserAgent I<get>, I<post>, I<put> and I<delete> methods.
+
 =head1 edit
 
 =begin text
@@ -386,3 +388,5 @@ L<http://www.xfront.com/REST-Web-Services.html>
 =cut
 
 1;
+__END__
+:!pod2s5 --theme yatil %
