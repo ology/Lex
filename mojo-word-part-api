@@ -97,7 +97,7 @@ get '/defn/:defn' => sub {
     $sth->finish;
     $self->db_disconnect;
 
-    if ( @$part ) {
+    if (@$part) {
         return $self->render( json => { part => $part } );
     }
     else {
