@@ -9,12 +9,12 @@ my $dbh;
 
 # Create db connection if needed
 helper db => sub {
-    if ( $dbh ) {
+    if ($dbh) {
         return $dbh;
     }
     else {
         $dbh = DBI->connect( 'DBI:mysql:database=word_part;host=localhost', 'root', 'abc123' )
-            or die $DBI::errstr;
+          or die $DBI::errstr;
         return $dbh;
     }
 };
@@ -23,22 +23,20 @@ helper db => sub {
 helper db_disconnect => sub {
     my $self = shift;
     $self->db->disconnect;
-    $dbh = "";  
+    $dbh = '';
 };
 
 # Return a hash from a json string
 helper json_data => sub {
     my $self = shift;
-    my $json_data = $self->param('json');
+    my $data = $self->param('json');
     my $json = Mojo::JSON->new;
-    my $hash = $json->decode($json_data);
+    my $hash = $json->decode($data);
     my $err  = $json->error;
-    if ( $err )
-    {
+    if ($err) {
         return $self->render( json => { result => 0, message => $err } );
     }
-    else
-    {
+    else {
         return $hash;
     }
 };
@@ -55,7 +53,7 @@ under sub {
     my ($username) = $sth->fetchrow;
     $sth->finish;
 
-    if ( $username ) {
+    if ($username) {
         return 1;
     }
     else {
@@ -73,12 +71,12 @@ get '/affix/:affix' => sub {
 
     my $sql = 'SELECT * FROM fragment WHERE affix LIKE ?';
     my $sth = $self->db->prepare($sql);
-    $sth->execute( '%'.$affix.'%' );
+    $sth->execute( '%' . $affix . '%' );
     my $part = $sth->fetchall_arrayref;
     $sth->finish;
     $self->db_disconnect;
 
-    if ( @$part ) {
+    if (@$part) {
         return $self->render( json => { part => $part } );
     }
     else {
@@ -94,7 +92,7 @@ get '/defn/:defn' => sub {
 
     my $sql = 'SELECT * FROM fragment WHERE definition LIKE ?';
     my $sth = $self->db->prepare($sql);
-    $sth->execute( '%'.$defn.'%' );
+    $sth->execute( '%' . $defn . '%' );
     my $part = $sth->fetchall_arrayref;
     $sth->finish;
     $self->db_disconnect;
@@ -108,6 +106,7 @@ post '/add/' => sub {
 
     my $hash;
     $hash = $self->json_data if $self->param('json');
+
     # Convenience
     my $prefix = $hash->{prefix} || $self->param('prefix');
     my $affix  = $hash->{affix}  || $self->param('affix');
@@ -116,7 +115,7 @@ post '/add/' => sub {
     my $etym   = $hash->{etym}   || $self->param('etym');
 
     $affix = '(?<=\\w)' . $affix if $prefix;
-    $affix = $affix . '(?=\\w)' if $suffix;
+    $affix = $affix . '(?=\\w)'  if $suffix;
 
     my $sql = 'INSERT INTO fragment (affix, definition, etymology) VALUES (?, ?, ?)';
     my $sth = $self->db->prepare($sql);
@@ -125,8 +124,7 @@ post '/add/' => sub {
     $sth->finish;
     $self->db_disconnect;
 
-    if ( $new_id )
-    {
+    if ($new_id) {
         return $self->render( json => { result => 1, message => 'OK' } );
     }
     else {
@@ -140,6 +138,7 @@ put '/update/' => sub {
 
     my $hash;
     $hash = $self->json_data if $self->param('json');
+
     # Convenience
     my $id     = $hash->{id}     || $self->param('id');
     my $prefix = $hash->{prefix} || $self->param('prefix');
@@ -149,16 +148,15 @@ put '/update/' => sub {
     my $etym   = $hash->{etym}   || $self->param('etym');
 
     $affix = '(?<=\\w)' . $affix if $prefix;
-    $affix = $affix . '(?=\\w)' if $suffix;
+    $affix = $affix . '(?=\\w)'  if $suffix;
 
     my $sql = 'UPDATE fragment SET affix=?, definition=?, etymology=? WHERE id=?';
     my $sth = $self->db->prepare($sql);
-    my $rv = $sth->execute( $affix, $defn, $etym, $id );
+    my $rv  = $sth->execute( $affix, $defn, $etym, $id );
     $sth->finish;
     $self->db_disconnect;
 
-    if ( $rv )
-    {
+    if ($rv) {
         return $self->render( json => { result => 1, message => 'OK' } );
     }
     else {
@@ -174,12 +172,11 @@ del '/delete/:id' => sub {
 
     my $sql = 'DELETE FROM fragment WHERE id=?';
     my $sth = $self->db->prepare($sql);
-    my $rv = $sth->execute($id);
+    my $rv  = $sth->execute($id);
     $sth->finish;
     $self->db_disconnect;
 
-    if ( $rv )
-    {
+    if ($rv) {
         return $self->render( json => { result => 1, message => 'OK' } );
     }
     else {
@@ -200,19 +197,19 @@ get '/edit/:id' => sub {
     $sth->finish;
     $self->db_disconnect;
 
-    $self->stash( affix => '' );
+    $self->stash( affix      => '' );
     $self->stash( definition => '' );
-    $self->stash( etymology => '' );
-    $self->stash( method => 'add' );
+    $self->stash( etymology  => '' );
+    $self->stash( method     => 'add' );
     my ($p) = values %$part;
-    if ( keys %$part )
-    {
+    if ( keys %$part ) {
         $self->stash( $_ => $p->{$_} ) for keys %$p;
         $self->stash( method => 'update' );
     }
 
     $self->render('edit');
-#    return $self->render( json => $x );
+
+    #    return $self->render( json => $x );
 };
 
 app->start;
