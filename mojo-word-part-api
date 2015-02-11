@@ -181,7 +181,7 @@ del '/delete/:id' => sub {
     $sth->finish;
     $self->db_disconnect;
 
-    if ($rv) {
+    if ( $rv && $rv ne '0E0' ) {
         return $self->render( json => { result => 1, message => 'OK' } );
     }
     else {
