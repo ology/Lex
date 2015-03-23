@@ -17,7 +17,7 @@ my $content = read_file($filename);
 $content = lc $content;
 
 # Remove integers
-$content =~ s/\b\d+\b//gs;
+#$content =~ s/\b\d+\b//gs;
 
 # Remove stopwords
 for my $sw ( keys %{ getStopWords('en') } ) {
