@@ -21,10 +21,8 @@ $content =~ s/\b\d+\b//gs;
 
 # Remove stopwords
 for my $sw ( keys %{ getStopWords('en') } ) {
-#warn "S:$sw\n";
     $content =~ s/\b$sw\b//gs;
 }
-#warn "C:$content\n";
 
 # Process the content into ngrams
 my $ngram = Text::Ngrams->new(
