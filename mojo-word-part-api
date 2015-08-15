@@ -32,16 +32,8 @@ helper db_disconnect => sub {
 # Return a hash from a json string
 helper json_data => sub {
     my $self = shift;
-    my $data = $self->param('json');
-    my $json = Mojo::JSON->new;
-    my $hash = $json->decode($data);
-    my $err  = $json->error;
-    if ($err) {
-        return $self->render( json => { result => 0, message => $err } );
-    }
-    else {
-        return $hash;
-    }
+    my $hash = decode_json( $self->param('json') );
+    return $hash;
 };
 
 # Validate that an API request has a valid token
