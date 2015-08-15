@@ -41,6 +41,23 @@ helper db_disconnect => sub {
     $dbh = '';
 };
 
+# Finish the statement and disconnect the database connection
+helper db_finish_and_disconnect => sub {
+    my $self = shift;
+    my $sth  = shift;
+    $sth->finish;
+    $self->db_disconnect;
+};
+
+# Prepare and execute a query
+helper db_prepare_and_execute => sub {
+    my $self = shift;
+    my ( $sql, $binds ) = @_;
+    my $sth = $self->db->prepare($sql);
+    my $rv  = $sth->execute( @$binds );
+    return ( $sth, $rv );
+};
+
 # Return a hash from a json string
 helper json_data => sub {
     my $self = shift;
@@ -55,8 +72,7 @@ under sub {
     my $token = $self->param('token');
 
     my $sql = 'SELECT username FROM api_access WHERE token = ? AND active = 1';
-    my $sth = $self->db->prepare($sql);
-    $sth->execute($token);
+    my ( $sth, $rv ) = $self->db_prepare_and_execute( $sql, [ $token ] );
     my ($username) = $sth->fetchrow;
     $sth->finish;
 
@@ -100,11 +116,9 @@ post '/add/' => sub {
     $affix = _prefix_suffix( $affix, $prefix, $suffix );
 
     my $sql = 'INSERT INTO fragment (affix, definition, etymology) VALUES (?, ?, ?)';
-    my $sth = $self->db->prepare($sql);
-    $sth->execute( $affix, $defn, $etym );
+    my ( $sth, $rv ) = $self->db_prepare_and_execute( $sql, [ $affix, $defn, $etym ] );
     my $new_id = $sth->{mysql_insertid};
-    $sth->finish;
-    $self->db_disconnect;
+    $self->db_finish_and_disconnect($sth);
 
     if ($new_id) {
         return $self->render( json => { result => $new_id, message => 'OK' } );
@@ -133,10 +147,8 @@ put '/update/' => sub {
     $affix = _prefix_suffix( $affix, $prefix, $suffix );
 
     my $sql = 'UPDATE fragment SET affix=?, definition=?, etymology=? WHERE id=?';
-    my $sth = $self->db->prepare($sql);
-    my $rv  = $sth->execute( $affix, $defn, $etym, $id );
-    $sth->finish;
-    $self->db_disconnect;
+    my ( $sth, $rv ) = $self->db_prepare_and_execute( $sql, [ $affix, $defn, $etym, $id ] );
+    $self->db_finish_and_disconnect($sth);
 
     if ($rv) {
         return $self->render( json => { result => 1, message => 'OK' } );
@@ -153,10 +165,8 @@ del '/delete/:id' => sub {
     my $id = $self->stash('id');
 
     my $sql = 'DELETE FROM fragment WHERE id=?';
-    my $sth = $self->db->prepare($sql);
-    my $rv  = $sth->execute($id);
-    $sth->finish;
-    $self->db_disconnect;
+    my ( $sth, $rv ) = $self->db_prepare_and_execute( $sql, [ $id ] );
+    $self->db_finish_and_disconnect($sth);
 
     if ( $rv && $rv ne '0E0' ) {
         return $self->render( json => { result => 1, message => 'OK' } );
@@ -173,11 +183,9 @@ get '/edit/:id' => sub {
     my $id = $self->stash('id');
 
     my $sql = 'SELECT * FROM fragment WHERE id = ?';
-    my $sth = $self->db->prepare($sql);
-    $sth->execute($id);
+    my ( $sth, $rv ) = $self->db_prepare_and_execute( $sql, [ $id ] );
     my $part = $sth->fetchall_hashref('id');
-    $sth->finish;
-    $self->db_disconnect;
+    $self->db_finish_and_disconnect($sth);
 
     $self->stash( affix      => '' );
     $self->stash( definition => '' );
@@ -242,11 +250,9 @@ sub _search_records {
     my $value = $self->stash($param);
 
     my $sql = "SELECT * FROM fragment WHERE $column LIKE ?";
-    my $sth = $self->db->prepare($sql);
-    $sth->execute( '%' . $value . '%' );
+    my ( $sth, $rv ) = $self->db_prepare_and_execute( $sql, [ '%' . $value . '%' ] );
     my $records = $sth->fetchall_hashref('id');
-    $sth->finish;
-    $self->db_disconnect;
+    $self->db_finish_and_disconnect($sth);
 
     my $results = [];
     for my $record ( keys %$records ) {
