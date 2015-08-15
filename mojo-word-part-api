@@ -30,12 +30,13 @@ Readonly my $SEARCH_SQL => 'SELECT * FROM fragment WHERE %s LIKE ?';
 # Create or return a database handle
 my $dbh;
 helper db => sub {
-    if ($dbh) {
+    if ( $dbh ) {
         return $dbh;
     }
     else {
         $dbh = DBI->connect(
-            "DBI:$DB_TYPE:database=$DB_NAME;host=$DB_HOST", $DB_USER, $DB_PASS
+            "DBI:$DB_TYPE:database=$DB_NAME;host=$DB_HOST",
+            $DB_USER, $DB_PASS
         ) or die $DBI::errstr;
         return $dbh;
     }
@@ -82,7 +83,7 @@ under sub {
     my ($username) = $sth->fetchrow;
     $sth->finish;
 
-    if ($username) {
+    if ( $username ) {
         return 1;
     }
     else {
@@ -125,7 +126,7 @@ post '/add/' => sub {
     my $new_id = $sth->{mysql_insertid};
     $self->db_finish_and_disconnect($sth);
 
-    if ($new_id) {
+    if ( $new_id ) {
         return $self->render( json => { result => 1, message => 'OK', id => $new_id } );
     }
     else {
@@ -154,7 +155,7 @@ put '/update/' => sub {
     my ( $sth, $rv ) = $self->db_prepare_and_execute( $UPDATE_SQL, [ $affix, $defn, $etym, $id ] );
     $self->db_finish_and_disconnect($sth);
 
-    if ($rv) {
+    if ( $rv ) {
         return $self->render( json => { result => 1, message => 'OK' } );
     }
     else {
