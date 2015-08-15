@@ -5,13 +5,12 @@ use Mojo::JSON qw( decode_json encode_json );
 use DBI;
 use Readonly;
 
+# The affix is a prefix or a suffix
 Readonly my $PREFIX => '(?=\\w)';
 Readonly my $SUFFIX => '(?<=\\w)';
 
-# Global handle for db connections
+# Create or return a database handle
 my $dbh;
-
-# Create db connection if needed
 helper db => sub {
     if ($dbh) {
         return $dbh;
@@ -123,8 +122,7 @@ post '/add/' => sub {
     my $defn   = $hash->{defn}   || $self->param('defn');
     my $etym   = $hash->{etym}   || $self->param('etym');
 
-    $affix = $SUFFIX . $affix if $suffix;
-    $affix = $affix . $PREFIX if $prefix;
+    $affix = _prefix_suffix( $affix, $prefix, $suffix );
 
     my $sql = 'INSERT INTO fragment (affix, definition, etymology) VALUES (?, ?, ?)';
     my $sth = $self->db->prepare($sql);
@@ -156,8 +154,7 @@ put '/update/' => sub {
     my $defn   = $hash->{defn}   || $self->param('defn');
     my $etym   = $hash->{etym}   || $self->param('etym');
 
-    $affix = $SUFFIX . $affix if $suffix;
-    $affix = $affix . $PREFIX if $prefix;
+    $affix = _prefix_suffix( $affix, $prefix, $suffix );
 
     my $sql = 'UPDATE fragment SET affix=?, definition=?, etymology=? WHERE id=?';
     my $sth = $self->db->prepare($sql);
@@ -220,6 +217,15 @@ get '/edit/:id' => sub {
 
     #    return $self->render( json => $x );
 };
+
+sub _prefix_suffix {
+    my ( $affix, $prefix, $suffix ) = @_;
+
+    $affix = $SUFFIX . $affix if $suffix;
+    $affix .= $PREFIX if $prefix;
+
+    return $affix;
+}
 
 app->start;
 __DATA__
