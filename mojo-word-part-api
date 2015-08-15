@@ -1,7 +1,7 @@
 #!/usr/bin/env perl
 
 use Mojolicious::Lite;
-use Mojo::JSON qw( decode_json encode_json );
+use Mojo::JSON qw( decode_json );
 use DBI;
 use Readonly;
 
