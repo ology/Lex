@@ -1,6 +1,7 @@
 #!/usr/bin/env perl
 
 use DBI;
+use Lingua::Word::Parser;
 use Mojo::JSON qw( decode_json );
 use Mojolicious::Lite;
 use Readonly;
@@ -9,6 +10,14 @@ use Readonly;
 Readonly my $PREFIX => '(?=\\w)';
 Readonly my $SUFFIX => '(?<=\\w)';
 
+Readonly my $MAX_WORD_SIZE => 30;
+
+Readonly my $DB_NAME => 'word_part';
+Readonly my $DB_USER => 'root';
+Readonly my $DB_PASS => 'abc123';
+Readonly my $DB_TYPE => 'mysql';
+Readonly my $DB_HOST => 'localhost';
+
 # Create or return a database handle
 my $dbh;
 helper db => sub {
@@ -16,7 +25,7 @@ helper db => sub {
         return $dbh;
     }
     else {
-        $dbh = DBI->connect( 'DBI:mysql:database=word_part;host=localhost', 'root', 'abc123' )
+        $dbh = DBI->connect( "DBI:$DB_TYPE:database=$DB_NAME;host=$DB_HOST", $DB_USER, $DB_PASS )
           or die $DBI::errstr;
         return $dbh;
     }
@@ -92,7 +101,7 @@ get '/defn/:defn' => sub {
     $sth->finish;
     $self->db_disconnect;
 
-    if (@$part) {
+    if ( keys %$records ) {
         return $self->render( json => $records );
     }
     else {
@@ -209,6 +218,51 @@ get '/edit/:id' => sub {
 
     $self->render('edit');
 };
+
+# curl http://127.0.0.1:5000/parse/biology?token=ABC123
+get '/parse/:word' => sub {
+    my $self = shift;
+
+    my $word = $self->stash('word');
+    my $results;
+
+    if ( $word && length $word > $MAX_WORD_SIZE ) {
+        return $self->render(
+            json => {
+                result  => 0,
+                message => "The word cannot have more than $MAX_WORD_SIZE letters",
+            }
+        );
+    }
+    elsif ( $word ) {
+        my $p = Lingua::Word::Parser->new(
+            word   => $word,
+            dbname => $DB_NAME,
+            dbuser => $DB_USER,
+            dbpass => $DB_PASS,
+            dbtype => $DB_TYPE,
+            dbhost => $DB_HOST,
+        );
+
+        # Find the known word-part positions.
+        $p->knowns;
+        $p->power;
+        my $score = $p->score( '[', ']' );
+
+        for my $key ( reverse sort keys %$score )
+        {
+            push @$results, $score->{$key};
+        }
+    }
+
+    if ( @$results ) {
+        return $self->render( json => { result => $results->[0] } );
+    }
+    else {
+        return $self->render( json => { result => 0, message => 'No results' } );
+    }
+};
+
 
 sub _prefix_suffix {
     my ( $affix, $prefix, $suffix ) = @_;
