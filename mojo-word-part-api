@@ -3,6 +3,10 @@
 use Mojolicious::Lite;
 use Mojo::JSON qw( decode_json encode_json );
 use DBI;
+use Readonly;
+
+Readonly my $PREFIX => '(?=\\w)';
+Readonly my $SUFFIX => '(?<=\\w)';
 
 # Global handle for db connections
 my $dbh;
@@ -119,8 +123,8 @@ post '/add/' => sub {
     my $defn   = $hash->{defn}   || $self->param('defn');
     my $etym   = $hash->{etym}   || $self->param('etym');
 
-    $affix = '(?<=\\w)' . $affix if $prefix;
-    $affix = $affix . '(?=\\w)'  if $suffix;
+    $affix = $SUFFIX . $affix if $suffix;
+    $affix = $affix . $PREFIX if $prefix;
 
     my $sql = 'INSERT INTO fragment (affix, definition, etymology) VALUES (?, ?, ?)';
     my $sth = $self->db->prepare($sql);
@@ -152,8 +156,8 @@ put '/update/' => sub {
     my $defn   = $hash->{defn}   || $self->param('defn');
     my $etym   = $hash->{etym}   || $self->param('etym');
 
-    $affix = '(?<=\\w)' . $affix if $prefix;
-    $affix = $affix . '(?=\\w)'  if $suffix;
+    $affix = $SUFFIX . $affix if $suffix;
+    $affix = $affix . $PREFIX if $prefix;
 
     my $sql = 'UPDATE fragment SET affix=?, definition=?, etymology=? WHERE id=?';
     my $sth = $self->db->prepare($sql);
