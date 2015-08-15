@@ -75,7 +75,7 @@ get '/affix/:affix' => sub {
         return $self->render( json => { part => $part } );
     }
     else {
-        return $self->render( json => { result => 0, message => 'No such part' } );
+        return $self->render( json => { result => 0, message => 'No such affix' } );
     }
 };
 
