@@ -25,8 +25,9 @@ helper db => sub {
         return $dbh;
     }
     else {
-        $dbh = DBI->connect( "DBI:$DB_TYPE:database=$DB_NAME;host=$DB_HOST", $DB_USER, $DB_PASS )
-          or die $DBI::errstr;
+        $dbh = DBI->connect(
+            "DBI:$DB_TYPE:database=$DB_NAME;host=$DB_HOST", $DB_USER, $DB_PASS
+        ) or die $DBI::errstr;
         return $dbh;
     }
 };
@@ -249,8 +250,7 @@ get '/parse/:word' => sub {
         $p->power;
         my $score = $p->score( '[', ']' );
 
-        for my $key ( reverse sort keys %$score )
-        {
+        for my $key ( reverse sort keys %$score ) {
             push @$results, $score->{$key};
         }
     }
