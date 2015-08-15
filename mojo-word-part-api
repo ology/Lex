@@ -20,6 +20,13 @@ Readonly my $DB_HOST => 'localhost';
 Readonly my $PREFIX => '(?=\\w)';
 Readonly my $SUFFIX => '(?<=\\w)';
 
+Readonly my $ACCESS_SQL => 'SELECT username FROM api_access WHERE token = ? AND active = 1';
+Readonly my $INSERT_SQL => 'INSERT INTO fragment (affix, definition, etymology) VALUES (?, ?, ?)';
+Readonly my $DELETE_SQL => 'DELETE FROM fragment WHERE id=?';
+Readonly my $UPDATE_SQL => 'UPDATE fragment SET affix=?, definition=?, etymology=? WHERE id=?';
+Readonly my $EDIT_SQL   => 'SELECT * FROM fragment WHERE id = ?';
+Readonly my $SEARCH_SQL => 'SELECT * FROM fragment WHERE %s LIKE ?';
+
 # Create or return a database handle
 my $dbh;
 helper db => sub {
@@ -71,8 +78,7 @@ under sub {
 
     my $token = $self->param('token');
 
-    my $sql = 'SELECT username FROM api_access WHERE token = ? AND active = 1';
-    my ( $sth, $rv ) = $self->db_prepare_and_execute( $sql, [ $token ] );
+    my ( $sth, $rv ) = $self->db_prepare_and_execute( $ACCESS_SQL, [ $token ] );
     my ($username) = $sth->fetchrow;
     $sth->finish;
 
@@ -115,8 +121,7 @@ post '/add/' => sub {
 
     $affix = _prefix_suffix( $affix, $prefix, $suffix );
 
-    my $sql = 'INSERT INTO fragment (affix, definition, etymology) VALUES (?, ?, ?)';
-    my ( $sth, $rv ) = $self->db_prepare_and_execute( $sql, [ $affix, $defn, $etym ] );
+    my ( $sth, $rv ) = $self->db_prepare_and_execute( $INSERT_SQL, [ $affix, $defn, $etym ] );
     my $new_id = $sth->{mysql_insertid};
     $self->db_finish_and_disconnect($sth);
 
@@ -146,8 +151,7 @@ put '/update/' => sub {
 
     $affix = _prefix_suffix( $affix, $prefix, $suffix );
 
-    my $sql = 'UPDATE fragment SET affix=?, definition=?, etymology=? WHERE id=?';
-    my ( $sth, $rv ) = $self->db_prepare_and_execute( $sql, [ $affix, $defn, $etym, $id ] );
+    my ( $sth, $rv ) = $self->db_prepare_and_execute( $UPDATE_SQL, [ $affix, $defn, $etym, $id ] );
     $self->db_finish_and_disconnect($sth);
 
     if ($rv) {
@@ -164,8 +168,7 @@ del '/delete/:id' => sub {
 
     my $id = $self->stash('id');
 
-    my $sql = 'DELETE FROM fragment WHERE id=?';
-    my ( $sth, $rv ) = $self->db_prepare_and_execute( $sql, [ $id ] );
+    my ( $sth, $rv ) = $self->db_prepare_and_execute( $DELETE_SQL, [ $id ] );
     $self->db_finish_and_disconnect($sth);
 
     if ( $rv && $rv ne '0E0' ) {
@@ -182,8 +185,7 @@ get '/edit/:id' => sub {
 
     my $id = $self->stash('id');
 
-    my $sql = 'SELECT * FROM fragment WHERE id = ?';
-    my ( $sth, $rv ) = $self->db_prepare_and_execute( $sql, [ $id ] );
+    my ( $sth, $rv ) = $self->db_prepare_and_execute( $EDIT_SQL, [ $id ] );
     my $part = $sth->fetchall_hashref('id');
     $self->db_finish_and_disconnect($sth);
 
@@ -249,7 +251,7 @@ sub _search_records {
 
     my $value = $self->stash($param);
 
-    my $sql = "SELECT * FROM fragment WHERE $column LIKE ?";
+    my $sql = sprintf $SEARCH_SQL, $column;
     my ( $sth, $rv ) = $self->db_prepare_and_execute( $sql, [ '%' . $value . '%' ] );
     my $records = $sth->fetchall_hashref('id');
     $self->db_finish_and_disconnect($sth);
