@@ -121,7 +121,7 @@ post '/add/' => sub {
     $self->db_finish_and_disconnect($sth);
 
     if ($new_id) {
-        return $self->render( json => { result => $new_id, message => 'OK' } );
+        return $self->render( json => { result => 1, message => 'OK', id => $new_id } );
     }
     else {
         return $self->render( json => { result => 0, message => 'Insert Failure' } );
