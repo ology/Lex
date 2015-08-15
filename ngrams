@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-use File::Slurp::Tiny qw( read_file );
+use File::Slurper qw( read_text );
 use Text::Ngrams;
 use Lingua::StopWords qw( getStopWords );
 
@@ -10,9 +10,11 @@ use Lingua::StopWords qw( getStopWords );
 my $filename = shift || die "Usage: perl $0 file.txt\n";
 my $n        = shift || 2;
 
+print "Slurping text from $filename...\n";
 # Read-in the file content
-my $content = read_file($filename);
+my $content = read_text($filename);
 
+print "Processing content...\n";
 # Normalize the content to all lowercase
 $content = lc $content;
 
@@ -24,6 +26,7 @@ for my $sw ( keys %{ getStopWords('en') } ) {
     $content =~ s/\b$sw\b//gs;
 }
 
+print "Making ngrams...\n";
 # Process the content into ngrams
 my $ngram = Text::Ngrams->new(
     type       => 'word',
@@ -37,3 +40,4 @@ $ngram->to_string(
     orderby   => 'frequency',
 #    normalize => 1,
 );
+print "Created $0.profile of ngrams.\n"
