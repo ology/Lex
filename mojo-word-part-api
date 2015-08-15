@@ -208,8 +208,6 @@ get '/edit/:id' => sub {
     }
 
     $self->render('edit');
-
-    #    return $self->render( json => $x );
 };
 
 sub _prefix_suffix {
