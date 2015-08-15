@@ -8,10 +8,6 @@ use Readonly;
 
 Readonly my $APP_SECRET => 'ABC123';
 
-# The affix is a prefix or a suffix
-Readonly my $PREFIX => '(?=\\w)';
-Readonly my $SUFFIX => '(?<=\\w)';
-
 Readonly my $MAX_WORD_SIZE => 30;
 
 Readonly my $DB_NAME => 'word_part';
@@ -19,6 +15,10 @@ Readonly my $DB_USER => 'root';
 Readonly my $DB_PASS => 'abc123';
 Readonly my $DB_TYPE => 'mysql';
 Readonly my $DB_HOST => 'localhost';
+
+# The affix is a prefix or a suffix
+Readonly my $PREFIX => '(?=\\w)';
+Readonly my $SUFFIX => '(?<=\\w)';
 
 # Create or return a database handle
 my $dbh;
