@@ -81,8 +81,13 @@ get '/affix/:affix' => sub {
     $sth->finish;
     $self->db_disconnect;
 
-    if ( keys %$records ) {
-        return $self->render( json => $records );
+    my $results = [];
+    for my $record ( keys %$records ) {
+        push @$results, $records->{$record};
+    }
+
+    if ( @$results ) {
+        return $self->render( json => $results );
     }
     else {
         return $self->render( json => { result => 0, message => 'No such affix' } );
@@ -102,8 +107,13 @@ get '/defn/:defn' => sub {
     $sth->finish;
     $self->db_disconnect;
 
-    if ( keys %$records ) {
-        return $self->render( json => $records );
+    my $results = [];
+    for my $record ( keys %$records ) {
+        push @$results, $records->{$record};
+    }
+
+    if ( @$results ) {
+        return $self->render( json => $results );
     }
     else {
         return $self->render( json => { result => 0, message => 'No such definition' } );
