@@ -71,53 +71,13 @@ under sub {
 # curl http://127.0.0.1:3000/affix/fug?token=ABC123
 get '/affix/:affix' => sub {
     my $self = shift;
-
-    my $affix = $self->stash('affix');
-
-    my $sql = 'SELECT * FROM fragment WHERE affix LIKE ?';
-    my $sth = $self->db->prepare($sql);
-    $sth->execute( '%' . $affix . '%' );
-    my $records = $sth->fetchall_hashref('id');
-    $sth->finish;
-    $self->db_disconnect;
-
-    my $results = [];
-    for my $record ( keys %$records ) {
-        push @$results, $records->{$record};
-    }
-
-    if ( @$results ) {
-        return $self->render( json => $results );
-    }
-    else {
-        return $self->render( json => { result => 0, message => 'No such affix' } );
-    }
+    _search_records( $self, 'affix', 'affix' );
 };
 
 # curl http://127.0.0.1:3000/defn/stun?token=ABC123
 get '/defn/:defn' => sub {
     my $self = shift;
-
-    my $defn = $self->stash('defn');
-
-    my $sql = 'SELECT * FROM fragment WHERE definition LIKE ?';
-    my $sth = $self->db->prepare($sql);
-    $sth->execute( '%' . $defn . '%' );
-    my $records = $sth->fetchall_hashref('id');
-    $sth->finish;
-    $self->db_disconnect;
-
-    my $results = [];
-    for my $record ( keys %$records ) {
-        push @$results, $records->{$record};
-    }
-
-    if ( @$results ) {
-        return $self->render( json => $results );
-    }
-    else {
-        return $self->render( json => { result => 0, message => 'No such definition' } );
-    }
+    _search_records( $self, 'defn', 'definition' );
 };
 
 # curl --data 'token=ABC123&json={"affix":"XXX","defn":"xyz"}' http://127.0.0.1:3000/add
@@ -273,6 +233,31 @@ get '/parse/:word' => sub {
     }
 };
 
+sub _search_records {
+    my $self = shift;
+    my ( $param, $column ) = @_;
+
+    my $value = $self->stash($param);
+
+    my $sql = "SELECT * FROM fragment WHERE $column LIKE ?";
+    my $sth = $self->db->prepare($sql);
+    $sth->execute( '%' . $value . '%' );
+    my $records = $sth->fetchall_hashref('id');
+    $sth->finish;
+    $self->db_disconnect;
+
+    my $results = [];
+    for my $record ( keys %$records ) {
+        push @$results, $records->{$record};
+    }
+
+    if ( @$results ) {
+        return $self->render( json => $results );
+    }
+    else {
+        return $self->render( json => { result => 0, message => "No such $column" } );
+    }
+}
 
 sub _prefix_suffix {
     my ( $affix, $prefix, $suffix ) = @_;
