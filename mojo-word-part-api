@@ -6,6 +6,8 @@ use Mojo::JSON qw( decode_json );
 use Mojolicious::Lite;
 use Readonly;
 
+Readonly my $APP_SECRET => 'ABC123';
+
 # The affix is a prefix or a suffix
 Readonly my $PREFIX => '(?=\\w)';
 Readonly my $SUFFIX => '(?<=\\w)';
@@ -267,6 +269,8 @@ sub _prefix_suffix {
 
     return $affix;
 }
+
+app->secrets([$APP_SECRET]);
 
 app->start;
 __DATA__
