@@ -1,8 +1,8 @@
 #!/usr/bin/env perl
 
-use Mojolicious::Lite;
-use Mojo::JSON qw( decode_json );
 use DBI;
+use Mojo::JSON qw( decode_json );
+use Mojolicious::Lite;
 use Readonly;
 
 # The affix is a prefix or a suffix
