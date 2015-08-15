@@ -67,12 +67,12 @@ get '/affix/:affix' => sub {
     my $sql = 'SELECT * FROM fragment WHERE affix LIKE ?';
     my $sth = $self->db->prepare($sql);
     $sth->execute( '%' . $affix . '%' );
-    my $part = $sth->fetchall_arrayref;
+    my $records = $sth->fetchall_hashref('id');
     $sth->finish;
     $self->db_disconnect;
 
-    if (@$part) {
-        return $self->render( json => { part => $part } );
+    if ( keys %$records ) {
+        return $self->render( json => $records );
     }
     else {
         return $self->render( json => { result => 0, message => 'No such affix' } );
@@ -88,12 +88,12 @@ get '/defn/:defn' => sub {
     my $sql = 'SELECT * FROM fragment WHERE definition LIKE ?';
     my $sth = $self->db->prepare($sql);
     $sth->execute( '%' . $defn . '%' );
-    my $part = $sth->fetchall_arrayref;
+    my $records = $sth->fetchall_hashref('id');
     $sth->finish;
     $self->db_disconnect;
 
     if (@$part) {
-        return $self->render( json => { part => $part } );
+        return $self->render( json => $records );
     }
     else {
         return $self->render( json => { result => 0, message => 'No such definition' } );
