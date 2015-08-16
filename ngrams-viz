@@ -22,5 +22,6 @@ while ( my $line = <$fh> ) {
 
 $graph->timeout(120);
 
-print $graph->as_ascii();
+print $graph->as_boxart();
+#print $graph->as_ascii();
 #print $graph->as_svg();
