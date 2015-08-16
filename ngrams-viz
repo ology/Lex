@@ -1,0 +1,26 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+use Graph::Easy;
+
+my $graph = Graph::Easy->new();
+
+my $profile = shift || die "Usage: perl $0 ngram.profile";
+
+open( my $fh, '<', $profile )
+    or die "Cannot read $profile: $!";
+
+while ( my $line = <$fh> ) {
+#    print $line;
+    my ( $token1, $token2, $weight ) = split /\s+/, $line, 3;
+    next if $token1 eq '<NUMBER>' || $token2 eq '<NUMBER>'
+        || length $token1 == 1 || length $token2 == 1;
+    $graph->add_edge( $token1, $token2, $weight )
+        if $weight > 3;
+}
+
+$graph->timeout(120);
+
+print $graph->as_ascii();
+#print $graph->as_svg();
