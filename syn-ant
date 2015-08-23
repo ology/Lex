@@ -1,0 +1,35 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+use WordNet::QueryData;
+$ENV{WNHOME} = '/usr/local/Cellar/wordnet/3.1/dict/';
+my $wn = WordNet::QueryData->new(
+    noload => 1,
+    dir    => $ENV{WNHOME},
+);
+
+my $word  = shift || 'small';
+my $sense = shift || 'a';
+
+$word .= "#$sense#1";
+
+my @syns = $wn->querySense( $word, 'syns' );
+my @ants = $wn->queryWord( $word, 'ants' );
+my @hype = $wn->querySense( $word, 'hypes' );
+my @hypo = $wn->querySense( $word, 'hypos' );
+my @mero = $wn->querySense( $word, 'mero' );
+my @holo = $wn->querySense( $word, 'holo' );
+my @sim  = $wn->querySense( $word, 'sim' );
+my @enta = $wn->querySense( $word, 'enta' );
+my @caus = $wn->querySense( $word, 'caus' );
+
+print 'Syns: ', join( ', ', @syns ), "\n";
+print 'Ants: ', join( ', ', @ants ), "\n";
+print 'Hype: ', join( ', ', @hype ), "\n";
+print 'Hypo: ', join( ', ', @hypo ), "\n";
+print 'Mero: ', join( ', ', @mero ), "\n";
+print 'Holo: ', join( ', ', @holo ), "\n";
+print 'Sim: ', join( ', ', @sim ), "\n"; # if $sense eq 'a';
+print 'Enta: ', join( ', ', @enta ), "\n"; # if $sense eq 'v';
+print 'Caus: ', join( ', ', @caus ), "\n"; # if $sense eq 'v';
