@@ -12,7 +12,7 @@ Readonly my $MAX_WORD_SIZE => 30;
 
 Readonly my $DB_NAME => 'word_part';
 Readonly my $DB_USER => 'root';
-Readonly my $DB_PASS => 'abc123';
+Readonly my $DB_PASS => '';
 Readonly my $DB_TYPE => 'mysql';
 Readonly my $DB_HOST => 'localhost';
 
