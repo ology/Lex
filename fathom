@@ -12,7 +12,7 @@ my @files = File::Find::Rule->file()->name('*.txt')->in($path);
 
 my $text = Lingua::EN::Fathom->new();
 
-print "Chars\tWords\tComplex\tSentences\tSpW\tWpS\tFOG\tFlesch\tKincaid\tName\n";
+print "Chars\tWords\tComplex\tSentences\tSylW\tWpS\tFOG\tFlesch\tKincaid\tName\n";
 
 for my $file ( @files ) {
     $text->analyse_file($file);
