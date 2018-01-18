@@ -12,7 +12,12 @@ my @files = File::Find::Rule->file()->name('*.txt')->in($dir);
 
 for my $file ( @files ) {
     warn "File: $file\n";
-    my $content = read_text($file);
+    my $content;
+    eval { $content = read_text($file) };
+    if ( $@ ) {
+        warn $@;
+        next;
+    }
     $content = unidecode($content);
     write_text( $file, $content );
 }
