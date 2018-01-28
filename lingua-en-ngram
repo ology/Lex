@@ -1,0 +1,27 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+use Lingua::EN::Ngram;
+use Lingua::StopWords qw( getStopWords );
+
+my $file = shift || die "Usage: perl $0 file.txt [size] [max]\n";
+my $size = shift || 2;
+my $max  = shift || 10;
+
+my $ngram  = Lingua::EN::Ngram->new( file => $file );
+my $phrase = $ngram->ngram($size);
+
+my $i = 1;
+
+my $stop = getStopWords('en');
+
+for my $p ( sort { $phrase->{$b} <=> $phrase->{$a} } keys %$phrase ) {
+    next if $p !~ /^[\sA-Za-z]+$/; # Exclude punctuation.
+    next if grep { $stop->{$_} } split /\s/, $p; # No stopwords please.
+    next if $phrase->{$p} == 1; # No single frequency phrases.
+
+    printf "%*d. %d\t%s\n", length($max), $i, $phrase->{$p}, $p;
+
+    last if ++$i > $max;
+}
