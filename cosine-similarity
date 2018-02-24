@@ -43,9 +43,9 @@ for my $file ( sort keys %words ) {
     printf "Best labels: %s\n", join ', ', map { basename($_) } $r->labels;
     printf "\tcosine: %.3f, radian: %.3f, degree: %.3f\n", $r->cosine, $r->radian, $r->degree;
 
-#    ($worst, $r) = $cs->worst_for_label($file);
-#    printf "Worst labels: %s\n", join ', ', map { basename($_) } $r->labels;
-#    printf "\tcosine: %.3f, radian: %.3f, degree: %.3f\n", $r->cosine, $r->radian, $r->degree;
+    ($worst, $r) = $cs->worst_for_label($file);
+    printf "Worst labels: %s\n", join ', ', map { basename($_) } $r->labels;
+    printf "\tcosine: %.3f, radian: %.3f, degree: %.3f\n", $r->cosine, $r->radian, $r->degree;
 
     print "\n";
 }
