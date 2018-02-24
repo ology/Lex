@@ -29,7 +29,6 @@ for my $file ( @files ) {
     for my $word ( sort { $unigram->{$b} <=> $unigram->{$a} } keys %$unigram ) {
         next if $word !~ /^[\sA-Za-z]+$/; # Exclude punctuation
         next if $stop->{$word}; # Exclude stopwords
-        next if $unigram->{$word} == 1; # No single frequency phrases
 
         # Add the file, word and unigram to the words bucket
         $words{$file}->{$word} = $unigram->{$word};
