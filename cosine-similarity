@@ -6,16 +6,12 @@ use Data::CosineSimilarity;
 use File::Basename;
 use File::Find::Rule;
 use Lingua::EN::Ngram;
-use Lingua::StopWords qw(getStopWords);
 
 # Get a path of text files from the user
 my $path = shift || die "Usage: perl $0 /path/to/text/files\n";
 
 # Turn the path into a list of files
 my @files = File::Find::Rule->file()->name('*.txt')->in($path);
-
-# Get the English stopwords
-my $stop = getStopWords('en');
 
 # Delare the bucket for the files => { word => ngram_count } items
 my %words;
@@ -28,7 +24,6 @@ for my $file ( @files ) {
     # Inspect each unigram seen
     for my $word ( sort { $unigram->{$b} <=> $unigram->{$a} } keys %$unigram ) {
         next if $word !~ /^[\sA-Za-z]+$/; # Exclude punctuation
-        next if $stop->{$word}; # Exclude stopwords
 
         # Add the file, word and unigram to the words bucket
         $words{$file}->{$word} = $unigram->{$word};
