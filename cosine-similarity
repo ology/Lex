@@ -45,17 +45,14 @@ for my $file ( keys %words ) {
     $cs->add( $file => $words{$file} );
 }
 
-# Declare holders for the CosineSimilarity return variables
-my ( $best, $worst, $r );
-
 # Compare each files words to every other files words
 for my $file ( sort keys %words ) {
     # Get the closest matching files
-    ( $best, $r ) = $cs->best_for_label($file);
+    my ( undef, $r ) = $cs->best_for_label($file);
     _output( 'Best', $r );
 
     # Get the least closest matching files
-    ( $worst, $r ) = $cs->worst_for_label($file);
+    ( undef, $r ) = $cs->worst_for_label($file);
     _output( 'Worst', $r );
 
     print "\n";
@@ -63,6 +60,6 @@ for my $file ( sort keys %words ) {
 
 sub _output {
     my ( $label, $r ) = @_;
-    printf "%s labels: %s\n", $label, join ', ', map { basename($_) } $r->labels;
+    printf "%s match: %s\n", $label, join ' => ', map { basename($_) } $r->labels;
     printf "\tcosine: %.3f, radian: %.3f, degree: %.3f\n", $r->cosine, $r->radian, $r->degree;
 }
