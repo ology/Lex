@@ -8,41 +8,54 @@ use File::Find::Rule;
 use Lingua::EN::Ngram;
 use Lingua::StopWords qw(getStopWords);
 
+# Get a path of text files from the user
 my $path = shift || die "Usage: perl $0 /path/to/text/files\n";
 
+# Turn the path into a list of files
 my @files = File::Find::Rule->file()->name('*.txt')->in($path);
 
+# Get the English stopwords
 my $stop = getStopWords('en');
 
+# Delare the bucket for the files => { word => ngram_count } items
 my %words;
 
+# Populate the words bucket with unigrams
 for my $file ( @files ) {
     my $ngram = Lingua::EN::Ngram->new( file => $file );
     my $unigram = $ngram->ngram(1);
 
-    for my $word (sort { $unigram->{$b} <=> $unigram->{$a} } keys %$unigram) {
+    # Inspect each unigram seen
+    for my $word ( sort { $unigram->{$b} <=> $unigram->{$a} } keys %$unigram ) {
         next if $word !~ /^[\sA-Za-z]+$/; # Exclude punctuation
         next if $stop->{$word}; # Exclude stopwords
         next if $unigram->{$word} == 1; # No single frequency phrases
 
+        # Add the file, word and unigram to the words bucket
         $words{$file}->{$word} = $unigram->{$word};
     }
 }
 #use Data::Dumper;warn(__PACKAGE__,' L',__LINE__,". MARK: ",Dumper\%words);
 
+# Instantiate a CosineSimilarity object
 my $cs = Data::CosineSimilarity->new;
 
+# Add each words item to the CosineSimilarity object
 for my $file ( keys %words ) {
     $cs->add( $file => $words{$file} );
 }
 
+# Declare holders for the CosineSimilarity return variables
 my ( $best, $worst, $r );
 
+# Compare each files words to every other files words
 for my $file ( sort keys %words ) {
+    # Get the closest matching files
     ( $best, $r ) = $cs->best_for_label($file);
     printf "Best labels: %s\n", join ', ', map { basename($_) } $r->labels;
     printf "\tcosine: %.3f, radian: %.3f, degree: %.3f\n", $r->cosine, $r->radian, $r->degree;
 
+    # Get the least closest matching files
     ($worst, $r) = $cs->worst_for_label($file);
     printf "Worst labels: %s\n", join ', ', map { basename($_) } $r->labels;
     printf "\tcosine: %.3f, radian: %.3f, degree: %.3f\n", $r->cosine, $r->radian, $r->degree;
