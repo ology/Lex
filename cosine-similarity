@@ -55,7 +55,7 @@ for my $file ( sort keys %words ) {
     _output( 'Best', $r );
 
     # Get the least closest matching files
-    ($worst, $r) = $cs->worst_for_label($file);
+    ( $worst, $r ) = $cs->worst_for_label($file);
     _output( 'Worst', $r );
 
     print "\n";
