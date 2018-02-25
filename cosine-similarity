@@ -31,13 +31,14 @@ for my $file ( @files ) {
 }
 #use Data::Dumper;warn(__PACKAGE__,' L',__LINE__,". MARK: ",Dumper\%words);
 
-# Get the files that have used the given word
+# Build a list of every word and the files use them
 my %vocab;
 for my $file ( keys %words ) {
     for my $word ( keys %{ $words{$file} } ) {
         push @{ $vocab{$word} }, $file;
     }
 }
+# Build a list of each file with a 1 or 0 if the word is present or not
 my %by_file;
 for my $word ( sort keys %vocab ) {
     for my $file ( sort keys %words ) {
@@ -65,8 +66,8 @@ for my $file ( sort keys %words ) {
     _output( 'Best', $r );
 
     # Get the least closest matching files
-    ( undef, $r ) = $cs->worst_for_label($file);
-    _output( 'Worst', $r );
+#    ( undef, $r ) = $cs->worst_for_label($file);
+#    _output( 'Worst', $r );
 
     print "\n";
 }
