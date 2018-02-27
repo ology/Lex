@@ -13,7 +13,7 @@ my $path = shift || die "Usage: perl $0 /path/to/text/files\n";
 # Turn the path into a list of files
 my @files = File::Find::Rule->file()->name('*.txt')->in($path);
 
-# Delare the bucket for the files => { word => ngram_count } items
+# Declare the bucket for the files => { word => ngram_count } items
 my %words;
 
 # Populate the words bucket with unigrams
