@@ -78,9 +78,9 @@ for my $file ( sort keys %words ) {
         # Get the least closest matching file
 #        ( undef, $r ) = $cs->worst_for_label($file);
 #        _output( 'Worst', $r );
-    }
 
-#    print "\n";
+        print "\n";
+    }
 }
 
 sub _output {
