@@ -8,7 +8,8 @@ use File::Find::Rule;
 use Lingua::EN::Ngram;
 
 # Get a path of text files from the user
-my $path = shift || die "Usage: perl $0 /path/to/text/files\n";
+my $path = shift || die "Usage: perl $0 /path/to/text/files [network]\n";
+my $net  = shift || 0;
 
 # Turn the path into a list of files
 my @files = File::Find::Rule->file()->name('*.txt')->in($path);
@@ -59,17 +60,27 @@ for my $file ( keys %by_file ) {
     $cs->add( $file => $by_file{$file} );
 }
 
+my %index;
+@index{ sort keys %words } = 1 .. scalar( keys %words );
+
 # Compare each files words to every other files words
 for my $file ( sort keys %words ) {
-    # Get the closest matching files
-    my ( undef, $r ) = $cs->best_for_label($file);
-    _output( 'Best', $r );
+    # Get the closest matching file
+    my ( $best, $r ) = $cs->best_for_label($file);
 
-    # Get the least closest matching files
-#    ( undef, $r ) = $cs->worst_for_label($file);
-#    _output( 'Worst', $r );
+    # Either output the network matrix or the files and metrics
+    if ( $net ) {
+        print "$index{$file}\t$index{$best}\n";
+    }
+    else {
+        _output( 'Best', $r );
 
-    print "\n";
+        # Get the least closest matching file
+#        ( undef, $r ) = $cs->worst_for_label($file);
+#        _output( 'Worst', $r );
+    }
+
+#    print "\n";
 }
 
 sub _output {
