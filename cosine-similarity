@@ -1,0 +1,87 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+use Data::CosineSimilarity;
+use File::Basename;
+use File::Find::Rule;
+use File::Slurper qw( read_text );
+
+my $path = shift || die "Usage: perl $0 /path/to/text/files [network]\n";
+my $net  = shift || 0;
+
+my @files = File::Find::Rule->file()->name('*.txt')->in($path);
+
+my %words;
+
+for my $file ( @files ) {
+    my $content = read_text($file);
+
+    $content =~ s/\d//g;
+    $content =~ s/[[:punct:]]//g;
+
+    my @words = split /\s+/, $content;
+
+    for my $word ( @words ) {
+        next unless $word;
+        $words{$file}->{$word}++;
+    }
+}
+#use Data::Dumper;warn(__PACKAGE__,' L',__LINE__,". MARK: ",Dumper\%words);
+
+# Build a list of every word and the files that use them
+my %vocab;
+for my $file ( keys %words ) {
+    for my $word ( keys %{ $words{$file} } ) {
+        push @{ $vocab{$word} }, $file;
+    }
+}
+# Build a list of each file with a 1 or 0 if the word is present or not
+my %by_file;
+for my $word ( sort keys %vocab ) {
+    for my $file ( sort keys %words ) {
+        if ( grep { $file eq $_ } @{ $vocab{$word} } ) {
+            $by_file{$file}->{$word} = 1;
+        }
+        else {
+            $by_file{$file}->{$word} = 0;
+        }
+    }
+}
+
+# Instantiate a CosineSimilarity object
+my $cs = Data::CosineSimilarity->new;
+
+# Add each words item to the CosineSimilarity object
+for my $file ( keys %by_file ) {
+    $cs->add( $file => $by_file{$file} );
+}
+
+my %index;
+@index{ sort keys %words } = 1 .. scalar( keys %words );
+
+# Compare each files words to every other files words
+for my $file ( sort keys %words ) {
+    # Get the closest matching file
+    my ( $best, $r ) = $cs->best_for_label($file);
+
+    # Either output the network matrix or the files and metrics
+    if ( $net ) {
+        print "$index{$file}\t$index{$best}\n";
+    }
+    else {
+        _output( 'Best', $r );
+
+        # Get the least closest matching file
+#        ( undef, $r ) = $cs->worst_for_label($file);
+#        _output( 'Worst', $r );
+
+        print "\n";
+    }
+}
+
+sub _output {
+    my ( $label, $r ) = @_;
+    printf "%s match: %s\n", $label, join ' => ', map { basename($_) } $r->labels;
+    printf "\tcosine: %.3f, radian: %.3f, degree: %.3f\n", $r->cosine, $r->radian, $r->degree;
+}
