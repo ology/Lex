@@ -1,0 +1,58 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+use File::Slurper qw( read_text );
+use Lingua::EN::Sentence qw( get_sentences );
+
+my $input_file = shift || die "Usage: perl $0 /some/file.txt\n";
+
+my $base = '/Users/gene/Documents/data/opinion-lexicon';
+
+my %opinion;
+
+for my $valence (qw( positive negative )) {
+    my $file = sprintf '%s/%s-words.txt', $base, $valence;
+
+    open( my $fh, '<', $file )
+        or die "Can't read $file: $!";
+
+    while ( my $line = <$fh> ) {
+        next if $line =~ /^;/;
+        $line =~ s/\s*//g;
+        next unless $line;
+
+        $opinion{$valence}->{$line} = undef;
+    }
+
+    close $fh;
+}
+
+my $contents = read_text($input_file);
+$contents =~ s/\d//g;
+$contents =~ s/:://g;
+
+my $sentences = get_sentences($contents);
+
+my %score;
+
+for my $sentence ( @$sentences ) {
+    $sentence =~ s/[[:punct:]]//g;
+
+    my @words = split /\s+/, $sentence;
+
+    my $score = 0;
+
+    for my $word ( @words ) {
+        $score += exists $opinion{positive}->{$word} ? 1
+                : exists $opinion{negative}->{$word} ? -1 : 0;
+    }
+
+    $score{$sentence} = $score;
+}
+use Data::Dumper;warn(__PACKAGE__,' L',__LINE__,". MARK: ",Dumper[map {"$_ => $score{$_}"} sort {$score{$b} <=> $score{$a}} @$sentences]);
+
+__END__
+for my $sentence ( @$sentences ) {
+    print $score{$sentence}, "\n";
+}
