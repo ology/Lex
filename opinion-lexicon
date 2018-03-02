@@ -71,3 +71,10 @@ for my $sentence ( @$sentences ) {
 for my $sentence ( @$sentences ) {
     print $score{$sentence}, "\n";
 }
+
+__END__
+> perl opinion-lexicon ~/Documents/lit/Sacred-Texts/Bible-Books/66-Revelation.txt > ~/tmp/Revelation-sentiment.txt
+
+R> s <- read.table('~/tmp/Revelation-sentiment.txt', header = F)
+R> plot(s$V1, type='l', main='Revelation Sentiment')
+R> abline( h = 0, col = 3, lty = 2 )
