@@ -2,57 +2,72 @@
 use strict;
 use warnings;
 
+# Load the modules to use
 use File::Slurper qw( read_text );
 use Lingua::EN::Sentence qw( get_sentences );
 
+# Get the text file to process from the command line
 my $input_file = shift || die "Usage: perl $0 /some/file.txt\n";
 
+# Locate the opinion lexicon - https://www.cs.uic.edu/~liub/FBS/sentiment-analysis.html#lexicon
 my $base = '/Users/gene/Documents/data/opinion-lexicon';
 
+# Bucket for the positive/negative opinion words
 my %opinion;
 
+# Populate the opinion bucket
 for my $valence (qw( positive negative )) {
     my $file = sprintf '%s/%s-words.txt', $base, $valence;
 
+    # Read the opinion file, line by line
     open( my $fh, '<', $file )
         or die "Can't read $file: $!";
 
     while ( my $line = <$fh> ) {
-        next if $line =~ /^;/;
-        $line =~ s/\s*//g;
+        next if $line =~ /^;/;  # Ignore comments
+        $line =~ s/\s*//g;      # Clean whitespace
         next unless $line;
 
+        # Add the word to the bucket
         $opinion{$valence}->{$line} = undef;
     }
 
     close $fh;
 }
 
+# Read-in the contents of the given text file to process
 my $contents = read_text($input_file);
-$contents =~ s/\d//g;
-$contents =~ s/:://g;
+$contents =~ s/\d//g;   # Drop numbers
+$contents =~ s/:://g;   # Drop the :: produced by dropping numbers
 
+# Split the file into sentences
 my $sentences = get_sentences($contents);
 
+# Bucket for the sentence scores
 my %score;
 
+# Process each sentence...
 for my $sentence ( @$sentences ) {
-    $sentence =~ s/[[:punct:]]//g;
+    $sentence =~ s/[[:punct:]]//g;  # Drop punctuation
 
+    # Split the sentence into words
     my @words = split /\s+/, $sentence;
 
+    # Initialize the sentence score
     my $score = 0;
 
+    # Tally the sentence score
     for my $word ( @words ) {
         $score += exists $opinion{positive}->{$word} ? 1
                 : exists $opinion{negative}->{$word} ? -1 : 0;
     }
 
+    # Save the sentence score
     $score{$sentence} = $score;
 }
-use Data::Dumper;warn(__PACKAGE__,' L',__LINE__,". MARK: ",Dumper[map {"$_ => $score{$_}"} sort {$score{$b} <=> $score{$a}} @$sentences]);
+#use Data::Dumper;warn(__PACKAGE__,' L',__LINE__,". MARK: ",Dumper[map {"$_ => $score{$_}"} sort {$score{$b} <=> $score{$a}} @$sentences]);
 
-__END__
+# Output the scores for plotting in R
 for my $sentence ( @$sentences ) {
     print $score{$sentence}, "\n";
 }
