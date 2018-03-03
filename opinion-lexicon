@@ -68,9 +68,7 @@ for my $sentence ( @$sentences ) {
 #use Data::Dumper;warn(__PACKAGE__,' L',__LINE__,". MARK: ",Dumper[map {"$_ => $score{$_}"} sort {$score{$b} <=> $score{$a}} @$sentences]);
 
 # Output the scores for plotting in R
-for my $sentence ( @$sentences ) {
-    print $score{$sentence}, "\n";
-}
+for my $sentence ( @$sentences ) { print $score{$sentence}, "\n"; }
 
 __END__
 > perl opinion-lexicon ~/Documents/lit/Sacred-Texts/Bible-Books/66-Revelation.txt > ~/tmp/Revelation-sentiment.txt
