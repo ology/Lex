@@ -108,6 +108,8 @@ def unique_grams(struct, minn=1, maxn=1):
 def generate_stanza(grammar, stanza):
     found = 0
 
+    dic = pyphen.Pyphen(lang='en')
+
     for _ in stanza:
         while (found < len(stanza)):
             rs = rand_sent(grammar[found], tags)
@@ -146,7 +148,7 @@ print('Done.')
 #nltk.help.upenn_tagset('RB')
 
 # Hyphenate and count syllables
-dic = pyphen.Pyphen(lang='en')
+#dic = pyphen.Pyphen(lang='en')
 #hyph = dic.inserted(rs)
 #syll = re.split(r'[\s-]-?', hyph)
 #print('Syllables:', len(syll))
