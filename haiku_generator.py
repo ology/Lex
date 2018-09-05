@@ -22,26 +22,6 @@ def get_sentences(files):
         sentences.extend(nltk.sent_tokenize(data))
     return sentences
 
-# Get sentence structures (a POS dictionary)
-def sent_struct(sentences):
-    s = {}
-
-    for sentence in sentences:
-        text = nltk.word_tokenize(sentence)
-
-        tagged = nltk.pos_tag(text)
-
-        tags = [i[1] for i in tagged if re.search(r'^\w+$', i[1])]
-
-        joined = ' '.join(tags)
-
-        if joined in s:
-            s[joined] += 1
-        else:
-            s[joined] = 1
-
-    return s
-
 # Get all POS tags and their word instances
 def word_tags(sentences):
     t = {}
@@ -64,46 +44,6 @@ def word_tags(sentences):
                         t[key].append(val)
 
     return t
-
-# Simulate a sentence based on a random structure and POS wordlists
-def rand_sent(ss, tags):
-    choice = random.choice(ss)
-    #print('Choice:', choice)
-    choice = choice.split()
-
-    w = []
-
-    for i, c in enumerate(choice):
-        x = random.choice(tags[c])
-        if i == 0:
-            x = x.title()
-        w.append(x)
-
-    sent = ' '.join(w) + '.'
-
-    return sent
-
-def word_grams(words, minn=1, maxn=1):
-    if len(words):
-        grams = []
-        for n in range(minn, maxn + 1):
-            ng = nltk.ngrams(words, n)
-            for ngram in ng:
-                string = ' '.join(str(i) for i in ngram)
-                grams.append(string)
-        return grams
-
-def unique_grams(struct, minn=1, maxn=1):
-    myngrams = []
-    for s in struct:
-        words = s.split()
-        if len(words) >= maxn:
-            wg = word_grams(words, minn=minn, maxn=maxn)
-            if wg:
-                for token in wg:
-                    if token not in myngrams:
-                        myngrams.append(token)
-    return myngrams
 
 def generate_stanza(grammar, stanza):
     found = 0
@@ -128,30 +68,9 @@ print('Collecting sentences...')
 sentences = get_sentences(files)
 print('Done.')
 
-#print('Building structures...')
-#struct = sent_struct(sentences)
-#print('Done.')
-# All sentence structures appearing more than once
-#ss = [i for i in struct if struct[i] > 1]
-
 print('Collecting word tags...')
 tags = word_tags(sentences)
 print('Done.')
-
-#print('Computing key ngrams...')
-#myngrams = unique_grams(struct, minn=3, maxn=4)
-#print('Done.')
-
-# Choose a random sentence structure
-#rs = rand_sent(list(struct.keys()), tags)
-#rs = rand_sent(myngrams, tags); print(rs)
-#nltk.help.upenn_tagset('RB')
-
-# Hyphenate and count syllables
-#dic = pyphen.Pyphen(lang='en')
-#hyph = dic.inserted(rs)
-#syll = re.split(r'[\s-]-?', hyph)
-#print('Syllables:', len(syll))
 
 grammar = [
     [
