@@ -59,7 +59,7 @@ def rand_sent(ss, tags):
             x = x.title()
         w.append(x)
 
-    sent = ' '.join(w) + '.'
+    sent = ' '.join(w)
 
     return sent
 
