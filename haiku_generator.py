@@ -79,9 +79,8 @@ def generate_stanza(grammar, stanza):
                 print(rs)
 
 
-folder = sys.argv[1] if len(sys.argv) > 1 else 'Misc/Meditations'
-
-files = get_files('/Users/gene/Documents/lit/' + folder)
+folder = sys.argv[1] if len(sys.argv) > 1 else '/Users/gene/Documents/lit/Misc/Meditations'
+files = get_files(folder)
 
 print('Collecting sentences...')
 sentences = get_sentences(files)
