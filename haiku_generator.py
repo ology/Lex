@@ -45,6 +45,25 @@ def word_tags(sentences):
 
     return t
 
+# Simulate a sentence based on a random structure and POS wordlists
+def rand_sent(ss, tags):
+    choice = random.choice(ss)
+    #print('Choice:', choice)
+    choice = choice.split()
+
+    w = []
+
+    for i, c in enumerate(choice):
+        x = random.choice(tags[c])
+        if i == 0:
+            x = x.title()
+        w.append(x)
+
+    sent = ' '.join(w) + '.'
+
+    return sent
+
+
 def generate_stanza(grammar, stanza):
     found = 0
 
