@@ -100,7 +100,8 @@ grammar = [
     [
         'NN VB IN',
         'NN VBZ TO VB',
-        'NN VBN JJ NN'
+        'NN VBN JJ NN',
+        'IN NNP VBD NN VB'
     ],
     [
         'NNS NN',
