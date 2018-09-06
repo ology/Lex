@@ -92,19 +92,21 @@ print('Done.')
 
 grammar = [
     [
-        'NN CC NN',
+        'NN NN',
         'JJ JJ NN',
-        'NN IN NN'
+        'NN IN NN',
+        'WRB RB NNS'
     ],
     [
         'NN VB IN',
-        'NN RB TO VB',
-        'RBS RB VBG'
+        'NN VBZ TO VB',
+        'NN VBN JJ NN'
     ],
     [
-        'JJ JJS NNS',
-        'NN NN',
-        'JJ NN IN NN'
+        'NNS NN',
+        'JJ NN IN NN',
+        'NN IN NNP',
+        'NN'
     ],
 ]
 
