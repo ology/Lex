@@ -63,7 +63,7 @@ def rand_sent(ss, tags):
     return sent
 
 
-def generate_stanza(grammar, stanza):
+def generate_stanza(grammar, stanza, tags):
     found = 0
 
     dic = pyphen.Pyphen(lang='en')
@@ -112,7 +112,7 @@ grammar = [
 
 stanza = [5,7,5]
 
-generate_stanza(grammar, stanza)
+generate_stanza(grammar, stanza, tags)
 
 """
 nltk.help.upenn_tagset()
