@@ -7,19 +7,25 @@ import pyphen
 
 def get_files(path):
     file_list = []
+    
     for fn in os.listdir(path):
         name = path + '/' + fn
+
         if name.endswith('.txt'):
             file_list.append(name)
+
     return file_list
 
 def get_sentences(files):
     sentences = []
+
     for f in files:
         fh = open(f, encoding='ISO-8859-1')
         data = fh.read()
         fh.close()
+        
         sentences.extend(nltk.sent_tokenize(data))
+
     return sentences
 
 # Get all POS tags and their word instances
@@ -34,9 +40,11 @@ def word_tags(sentences):
         for tag in tagged:
             key = tag[1]
             key = re.sub(r'\W', '', key)
+
             if key:
                 val = tag[0].lower()
                 val = re.sub(r"^'(\w+)$", '\1', val)
+
                 if re.search(r'[A-Za-z]', val):
                     if key not in t:
                         t[key] = []
