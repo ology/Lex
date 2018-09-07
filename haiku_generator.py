@@ -71,8 +71,10 @@ def generate_stanza(grammar, stanza, tags):
     for _ in stanza:
         while (found < len(stanza)):
             rs = rand_sent(grammar[found], tags)
+
             hyph = dic.inserted(rs)
             syll = re.split(r'[\s-]-?', hyph)
+
             if len(syll) == stanza[found]:
                 found += 1
                 print(rs)
