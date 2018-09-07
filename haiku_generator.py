@@ -53,13 +53,12 @@ def rand_sent(ss, tags):
 
     w = []
 
-    for i, c in enumerate(choice):
+    for c in choice:
         x = random.choice(tags[c])
-        if i == 0:
-            x = x.title()
         w.append(x)
 
     sent = ' '.join(w)
+    sent = sent.capitalize()
 
     return sent
 
