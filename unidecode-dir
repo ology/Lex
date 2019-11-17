@@ -7,8 +7,9 @@ use File::Slurper qw( read_text write_text );
 use Text::Unidecode;
 
 my $dir = shift || die "Usage: perl $0 /some/directory";
+my $ext = shift || 'txt';
 
-my @files = File::Find::Rule->file()->name('*.txt')->in($dir);
+my @files = File::Find::Rule->file()->name( '*.' . $ext )->in($dir);
 
 for my $file ( @files ) {
     warn "File: $file\n";
