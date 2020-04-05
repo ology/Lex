@@ -25,15 +25,11 @@ sub descend {
 
     my $syns = @syns[1 .. $#syns] ? " (@syns[1 .. $#syns])" : '';
 
-    print ("\t" x $i);
-    if (@hypos) {
-        print "$term$syns:\n";
+    print '', ("\t" x $i) . "$term$syns", (@hypos ? ':' : ''), "\n";
 
+    if (@hypos) {
         for my $sense (@hypos) {
             descend($sense, $i + 1);
         }
-    }
-    else {
-        print "$term$syns\n";
     }
 }
