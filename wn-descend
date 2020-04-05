@@ -1,0 +1,39 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+use WordNet::QueryData;
+
+my $term = shift || 'primate#n#2';
+my $depth = shift || 0;
+
+my $wn = WordNet::QueryData->new(
+    dir    => '/usr/local/opt/wordnet/dict',
+    noload => 1
+#    verbose => 1,
+);
+
+descend($term, 0);
+
+sub descend {
+    my ($term, $i) = @_;
+
+    return if $depth && $i > $depth;
+
+    my @hypos = $wn->querySense($term, 'hypo');
+    my @syns = $wn->querySense($term, 'syns');
+
+    my $syns = @syns[1 .. $#syns] ? " (@syns[1 .. $#syns])" : '';
+
+    print ("\t" x $i);
+    if (@hypos) {
+        print "$term$syns:\n";
+
+        for my $sense (@hypos) {
+            descend($sense, $i + 1);
+        }
+    }
+    else {
+        print "$term$syns\n";
+    }
+}
