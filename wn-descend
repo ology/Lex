@@ -27,9 +27,7 @@ sub descend {
 
     print '', ("\t" x $i) . "$term$syns", (@hypos ? ':' : ''), "\n";
 
-    if (@hypos) {
-        for my $sense (@hypos) {
-            descend($sense, $i + 1);
-        }
+    for my $sense (@hypos) {
+        descend($sense, $i + 1);
     }
 }
