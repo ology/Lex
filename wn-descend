@@ -13,10 +13,12 @@ my $wn = WordNet::QueryData->new(
 #    verbose => 1,
 );
 
-descend($term, 0);
+descend($term);
 
 sub descend {
     my ($term, $i) = @_;
+
+    $i //= 0;
 
     return if $depth && $i > $depth;
 
