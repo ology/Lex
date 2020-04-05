@@ -13,7 +13,7 @@ my $wn = WordNet::QueryData->new(
 #    verbose => 1,
 );
 
-descend($term);
+descend($term, $depth);
 
 sub descend {
     my ($term, $i) = @_;
