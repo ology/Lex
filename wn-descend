@@ -25,7 +25,7 @@ sub descend {
     my @hypos = $wn->querySense($term, 'hypo');
     my @syns = $wn->querySense($term, 'syns');
 
-    my $syns = @syns[1 .. $#syns] ? " (@syns[1 .. $#syns])" : '';
+    my $syns = @syns ? " (@syns)" : '';
 
     print "\t" x $i, "$term$syns", @hypos ? ':' : '', "\n";
 
