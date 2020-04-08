@@ -4,8 +4,12 @@ use warnings;
 
 use WordNet::QueryData;
 
-my $term = shift || 'primate#n#2';
+my $term  = shift || 'primate';
+my $pos   = shift || 'n';
+my $sense = shift || '2';
 my $depth = shift || 0;
+
+$term .= '#' . $pos . '#' . $sense;
 
 my $wn = WordNet::QueryData->new(
     dir    => '/usr/local/opt/wordnet/dict',
