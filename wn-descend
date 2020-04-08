@@ -23,9 +23,14 @@ sub descend {
     return if $depth && $i > $depth;
 
     my @hypos = $wn->querySense($term, 'hypo');
-    my @syns = $wn->querySense($term, 'syns');
 
-    my $syns = @syns ? " (@syns)" : '';
+    my @syns = $wn->querySense($term, 'syns');
+    my @synonyms;
+    for my $syn (@syns) {
+        push @synonyms, $syn
+            unless $syn eq $term;
+    }
+    my $syns = @synonyms ? " (@synonyms)" : '';
 
     print "\t" x $i, "$term$syns", @hypos ? ':' : '', "\n";
 
