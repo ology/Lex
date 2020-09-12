@@ -7,7 +7,7 @@ use List::Util 'uniq';
 use Storable;
 use String::LCSS 'lcss';
 
-my $word = shift || 'arachnisaurus';
+my $word = shift || '';
 my $count_thresh = shift || 1;
 my $length_thresh = shift || 1;
 my $max = shift || 50;
@@ -71,16 +71,18 @@ for my $fragment (sort keys %frags) {
 #print $fh "$_\n" for uniq sort keys %frags;
 #close $fh;exit;
 
-#print "Computing knowns...\n";
-#my %by_pos;
-#for my $fragment (sort keys %frags) {
-#    for my $re (@{ $frags{$fragment}{regex} }) {
-#        while ($word =~ /$re/g) {
-#            push @{ $by_pos{"@-"} }, $fragment;
-#        }
-#    }
-#}
-#warn(__PACKAGE__,' ',__LINE__," MARK: ",ddc(\%by_pos));exit;
+if ($word) {
+    print "Computing knowns...\n";
+    my %by_pos;
+    for my $fragment (sort keys %frags) {
+        for my $re (@{ $frags{$fragment}{regex} }) {
+            while ($word =~ /$re/g) {
+                push @{ $by_pos{"@-"} }, $fragment;
+            }
+        }
+    }
+warn(__PACKAGE__,' ',__LINE__," MARK: ",ddc(\%by_pos));
+}
 
 print "Build names...\n";
 my (@heads, @mids, @tails);
