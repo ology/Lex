@@ -9,6 +9,7 @@ use String::LCSS 'lcss';
 my $word = shift || 'arachnisaurus';
 my $count_thresh = shift || 1;
 my $length_thresh = shift || 1;
+my $max = shift || 10;
 
 print "Collecting words...\n";
 my @words;
@@ -36,13 +37,13 @@ for my $i (@words) {
                 $key = '(?<=\w)' . $lcss . '(?=\w)';
             }
             $frags{$lcss}{count}++;
-#            push @{ $frags{$lcss}{text} }, $key;
+            push @{ $frags{$lcss}{text} }, $key;
             push @{ $frags{$lcss}{regex} }, qr/$key/;
         }
     }
 }
 for my $fragment (sort keys %frags) {
-#    $frags{$fragment}{text} = [ uniq @{ $frags{$fragment}{text} }];
+    $frags{$fragment}{text} = [ uniq @{ $frags{$fragment}{text} }];
     $frags{$fragment}{regex} = [ uniq @{ $frags{$fragment}{regex} }];
 }
 #warn(__PACKAGE__,' ',__LINE__," MARK: ",ddc(\%frags));exit;
@@ -60,29 +61,36 @@ for my $fragment (sort keys %frags) {
 #print $fh "$_\n" for uniq sort keys %frags;
 #close $fh;exit;
 
-print "Computing knowns...\n";
-my %by_pos;
-for my $fragment (sort keys %frags) {
-    for my $re (@{ $frags{$fragment}{regex} }) {
-        while ($word =~ /$re/g) {
-            push @{ $by_pos{"@-"} }, $fragment;
+#print "Computing knowns...\n";
+#my %by_pos;
+#for my $fragment (sort keys %frags) {
+#    for my $re (@{ $frags{$fragment}{regex} }) {
+#        while ($word =~ /$re/g) {
+#            push @{ $by_pos{"@-"} }, $fragment;
+#        }
+#    }
+#}
+#warn(__PACKAGE__,' ',__LINE__," MARK: ",ddc(\%by_pos));exit;
+
+print "Build name...\n";
+my (@heads, @mids, @tails);
+for my $fragment (keys %frags) {
+    for my $text (@{ $frags{$fragment}{text} }) {
+        if ($text =~ /\^/) {
+            push @heads, $fragment;
+        }
+        elsif ($text =~ /\$/) {
+            push @tails, $fragment;
+        }
+        else {
+            push @mids, $fragment;
         }
     }
 }
-warn(__PACKAGE__,' ',__LINE__," MARK: ",ddc(\%by_pos));exit;
 
-my $rebuilt = '';
-build(0);
-warn(__PACKAGE__,' ',__LINE__," MARK: ",$rebuilt,"\n");
-
-sub build {
-    my ($i) = @_;
-    return '' if $i > length($word);
-    my $fragment = exists $by_pos{$i} ? $by_pos{$i}->[0] : substr $word, $i, 1;
-    $rebuilt .= $fragment . '-' . build($i + length($fragment));
-#    for my $fragment (@{ $by_pos{$i} }) {
-#        $rebuilt .= $fragment . '-' . build($i + length($fragment));
-#    }
+for my $i (1 .. $max) {
+    my $name = $heads[int rand @heads] . $mids[int rand @mids] . $tails[int rand @tails];
+    print "Name: $name\n";
 }
 
 __DATA__
