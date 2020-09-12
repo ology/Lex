@@ -72,7 +72,7 @@ for my $fragment (sort keys %frags) {
 #}
 #warn(__PACKAGE__,' ',__LINE__," MARK: ",ddc(\%by_pos));exit;
 
-print "Build name...\n";
+print "Build names...\n";
 my (@heads, @mids, @tails);
 for my $fragment (keys %frags) {
     for my $text (@{ $frags{$fragment}{text} }) {
@@ -90,7 +90,7 @@ for my $fragment (keys %frags) {
 
 for my $i (1 .. $max) {
     my $name = $heads[int rand @heads] . $mids[int rand @mids] . $tails[int rand @tails];
-    print "Name: $name\n";
+    print "$i. $name\n";
 }
 
 __DATA__
