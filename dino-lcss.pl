@@ -10,7 +10,7 @@ use String::LCSS 'lcss';
 my $word = shift || '';
 my $count_thresh = shift || 1;
 my $length_thresh = shift || 1;
-my $max = shift || 50;
+my $max = shift // 50;
 my $match = shift || '';
 
 my $frag_file = 'fragments.dat';
@@ -84,30 +84,32 @@ if ($word) {
 warn(__PACKAGE__,' ',__LINE__," MARK: ",ddc(\%by_pos));
 }
 
-print "Build names...\n";
-my (@heads, @mids, @tails);
-for my $fragment (keys %frags) {
-    for my $text (@{ $frags{$fragment}{text} }) {
-        if ($text =~ /\^/) {
-            push @heads, $fragment;
-        }
-        elsif ($text =~ /\$/) {
-            push @tails, $fragment;
-        }
-        else {
-            push @mids, $fragment;
+if ($max) {
+    print "Build names...\n";
+    my (@heads, @mids, @tails);
+    for my $fragment (keys %frags) {
+        for my $text (@{ $frags{$fragment}{text} }) {
+            if ($text =~ /\^/) {
+                push @heads, $fragment;
+            }
+            elsif ($text =~ /\$/) {
+                push @tails, $fragment;
+            }
+            else {
+                push @mids, $fragment;
+            }
         }
     }
-}
 
-if ($match) {
-    push @heads, $match;
-    push @mids, $match;
-}
+    if ($match) {
+        push @heads, $match;
+        push @mids, $match;
+    }
 
-for my $i (1 .. $max) {
-    my $name = $heads[int rand @heads] . $mids[int rand @mids] . $tails[int rand @tails];
-    print "$i. $name\n" if !$match || $name =~ /$match/;
+    for my $i (1 .. $max) {
+        my $name = $heads[int rand @heads] . $mids[int rand @mids] . $tails[int rand @tails];
+        print "$i. $name\n" if !$match || $name =~ /$match/;
+    }
 }
 
 __DATA__
