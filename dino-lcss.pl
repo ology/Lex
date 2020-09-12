@@ -11,6 +11,7 @@ my $word = shift || 'arachnisaurus';
 my $count_thresh = shift || 1;
 my $length_thresh = shift || 1;
 my $max = shift || 50;
+my $match = shift || '';
 
 my $frag_file = 'fragments.dat';
 
@@ -97,9 +98,14 @@ for my $fragment (keys %frags) {
     }
 }
 
+if ($match) {
+    push @heads, $match;
+    push @mids, $match;
+}
+
 for my $i (1 .. $max) {
     my $name = $heads[int rand @heads] . $mids[int rand @mids] . $tails[int rand @tails];
-    print "$i. $name\n";
+    print "$i. $name\n" if !$match || $name =~ /$match/;
 }
 
 __DATA__
