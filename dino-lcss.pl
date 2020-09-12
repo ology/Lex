@@ -4,12 +4,15 @@ use warnings;
 
 use Data::Dumper::Compact 'ddc';
 use List::Util 'uniq';
+use Storable;
 use String::LCSS 'lcss';
 
 my $word = shift || 'arachnisaurus';
 my $count_thresh = shift || 1;
 my $length_thresh = shift || 1;
-my $max = shift || 10;
+my $max = shift || 50;
+
+my $frag_file = 'fragments.dat';
 
 print "Collecting words...\n";
 my @words;
@@ -18,35 +21,41 @@ while (my $line = readline(DATA)) {
     push @words, lc $line;
 }
 
-print "Building fragments...\n";
 my %frags;
-for my $i (@words) {
-    for my $j (@words) {
-        next if $i eq $j;
-        my $lcss = lcss($i, $j);
-        if ($lcss) {
-            my $key;
-            my $jpos = index $j, $lcss;
-            if ($jpos == 0) {
-                $key = '^' . $lcss;
+if (-e $frag_file) {
+    %frags = %{ retrieve($frag_file) };
+}
+else {
+    print "Building fragments...\n";
+    for my $i (@words) {
+        for my $j (@words) {
+            next if $i eq $j;
+            my $lcss = lcss($i, $j);
+            if ($lcss) {
+                my $key;
+                my $jpos = index $j, $lcss;
+                if ($jpos == 0) {
+                    $key = '^' . $lcss;
+                }
+                elsif ($jpos == length($j) - length($lcss)) {
+                    $key = $lcss . '$';
+                }
+                else {
+                    $key = '(?<=\w)' . $lcss . '(?=\w)';
+                }
+                $frags{$lcss}{count}++;
+                push @{ $frags{$lcss}{text} }, $key;
+                push @{ $frags{$lcss}{regex} }, qr/$key/;
             }
-            elsif ($jpos == length($j) - length($lcss)) {
-                $key = $lcss . '$';
-            }
-            else {
-                $key = '(?<=\w)' . $lcss . '(?=\w)';
-            }
-            $frags{$lcss}{count}++;
-            push @{ $frags{$lcss}{text} }, $key;
-            push @{ $frags{$lcss}{regex} }, qr/$key/;
         }
     }
-}
-for my $fragment (sort keys %frags) {
-    $frags{$fragment}{text} = [ uniq @{ $frags{$fragment}{text} }];
-    $frags{$fragment}{regex} = [ uniq @{ $frags{$fragment}{regex} }];
-}
+    for my $fragment (sort keys %frags) {
+        $frags{$fragment}{text} = [ uniq @{ $frags{$fragment}{text} }];
+        $frags{$fragment}{regex} = [ uniq @{ $frags{$fragment}{regex} }];
+    }
 #warn(__PACKAGE__,' ',__LINE__," MARK: ",ddc(\%frags));exit;
+    store(\%frags, $frag_file);
+}
 
 print "Prune fragments...\n";
 for my $fragment (sort keys %frags) {
