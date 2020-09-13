@@ -20,23 +20,23 @@ my $wn = WordNet::QueryData->new(
 descend($term);
 
 sub descend {
-    my ($term, $i) = @_;
+    my ($word, $i) = @_;
 
     $i //= 0;
 
     return if $depth && $i > $depth;
 
-    my @hypos = $wn->querySense($term, 'hypo');
+    my @hypos = $wn->querySense($word, 'hypo');
 
-    my @syns = $wn->querySense($term, 'syns');
+    my @syns = $wn->querySense($word, 'syns');
     my @synonyms;
     for my $syn (@syns) {
         push @synonyms, $syn
-            unless $syn eq $term;
+            unless $syn eq $word;
     }
     my $syns = @synonyms ? " (@synonyms)" : '';
 
-    print "\t" x $i, "$term$syns", @hypos ? ':' : '', "\n";
+    print "\t" x $i, "$word$syns", @hypos ? ':' : '', "\n";
 
     descend($_, $i + 1)
         for @hypos;
