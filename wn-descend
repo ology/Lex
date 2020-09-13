@@ -5,7 +5,7 @@ use warnings;
 use WordNet::QueryData;
 
 my $term  = shift || 'man';
-my $pos   = shift || 'n';
+my $pos   = shift || 'n'; # n: noun, v: verb, a: adjective, r: adverb
 my $sense = shift || '1';
 my $depth = shift || 0;
 
