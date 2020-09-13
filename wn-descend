@@ -38,7 +38,6 @@ sub descend {
 
     print "\t" x $i, "$term$syns", @hypos ? ':' : '', "\n";
 
-    for my $h (@hypos) {
-        descend($h, $i + 1);
-    }
+    descend($_, $i + 1)
+        for @hypos;
 }
