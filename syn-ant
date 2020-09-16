@@ -15,22 +15,18 @@ my $sense = shift || 1;
 
 $word .= "#$pos#$sense";
 
-my @syns = $wn->querySense( $word, 'syns' );
-my @ants = $wn->queryWord( $word, 'ants' );
-my @hype = $wn->querySense( $word, 'hypes' );
-my @hypo = $wn->querySense( $word, 'hypos' );
-my @mero = $wn->querySense( $word, 'mero' );
-my @holo = $wn->querySense( $word, 'holo' );
-my @sim  = $wn->querySense( $word, 'sim' );
-my @enta = $wn->querySense( $word, 'enta' );
-my @caus = $wn->querySense( $word, 'caus' );
+my %query = (
+  antonyms   => [ $wn->querySense($word, 'ants') ],
+  cause      => [ $wn->querySense($word, 'caus') ],
+  entailment => [ $wn->querySense($word, 'enta') ],
+  holonyms   => [ $wn->querySense($word, 'holo') ],
+  hypernyms  => [ $wn->querySense($word, 'hypes') ],
+  hyponyms   => [ $wn->querySense($word, 'hypos') ],
+  meronyms   => [ $wn->querySense($word, 'mero') ],
+  similar    => [ $wn->querySense($word, 'sim') ],
+  synsets    => [ $wn->querySense($word, 'syns') ],
+);
 
-print "Synsets:\n\t", join( ', ', @syns ), "\n" if @syns;
-print "Antonyms:\n\t", join( ', ', @ants ), "\n" if @ants;
-print "Hypernyms:\n\t", join( ', ', @hype ), "\n" if @hype;
-print "Hyponyms:\n\t", join( ', ', @hypo ), "\n" if @hypo;
-print "Meronyms:\n\t", join( ', ', @mero ), "\n" if @mero;
-print "Holonyms:\n\t", join( ', ', @holo ), "\n" if @holo;
-print "Similar to:\n\t", join( ', ', @sim ), "\n" if @sim;
-print "Entailment:\n\t", join( ', ', @enta ), "\n" if @enta;
-print "Cause:\n\t", join( ', ', @caus ), "\n" if @caus;
+for my $key (sort keys %query) {
+    print ucfirst $key, ":\n\t", join(', ', $query{$key}->@*), "\n" if $query{$key}->@*;
+}
