@@ -16,7 +16,7 @@ my $sense = shift || 1;
 $word .= "#$pos#$sense";
 
 my %query = (
-  antonyms   => [ $wn->querySense($word, 'ants') ],
+  antonyms   => [ $wn->queryWord($word, 'ants') ],
   cause      => [ $wn->querySense($word, 'caus') ],
   entailment => [ $wn->querySense($word, 'enta') ],
   holonyms   => [ $wn->querySense($word, 'holo') ],
