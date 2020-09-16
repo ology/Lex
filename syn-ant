@@ -10,9 +10,10 @@ my $wn = WordNet::QueryData->new(
 );
 
 my $word  = shift || 'small';
-my $sense = shift || 'a';
+my $pos   = shift || 'a';
+my $sense = shift || 1;
 
-$word .= "#$sense#1";
+$word .= "#$pos#$sense";
 
 my @syns = $wn->querySense( $word, 'syns' );
 my @ants = $wn->queryWord( $word, 'ants' );
@@ -24,12 +25,12 @@ my @sim  = $wn->querySense( $word, 'sim' );
 my @enta = $wn->querySense( $word, 'enta' );
 my @caus = $wn->querySense( $word, 'caus' );
 
-print 'Synsets: ', join( ', ', @syns ), "\n";
-print 'Antonyms: ', join( ', ', @ants ), "\n";
-print 'Hypernyms: ', join( ', ', @hype ), "\n";
-print 'Hyponyms: ', join( ', ', @hypo ), "\n";
-print 'Meronyms: ', join( ', ', @mero ), "\n";
-print 'Holonyms: ', join( ', ', @holo ), "\n";
-print 'Similar to: ', join( ', ', @sim ), "\n"; # if $sense eq 'a';
-print 'Entailment: ', join( ', ', @enta ), "\n"; # if $sense eq 'v';
-print 'Cause: ', join( ', ', @caus ), "\n"; # if $sense eq 'v';
+print "Synsets:\n\t", join( ', ', @syns ), "\n";
+print "Antonyms:\n\t", join( ', ', @ants ), "\n";
+print "Hypernyms:\n\t", join( ', ', @hype ), "\n";
+print "Hyponyms:\n\t", join( ', ', @hypo ), "\n";
+print "Meronyms:\n\t", join( ', ', @mero ), "\n";
+print "Holonyms:\n\t", join( ', ', @holo ), "\n";
+print "Similar to:\n\t", join( ', ', @sim ), "\n"; # if $sense eq 'a';
+print "Entailment:\n\t", join( ', ', @enta ), "\n"; # if $sense eq 'v';
+print "Cause:\n\t", join( ', ', @caus ), "\n"; # if $sense eq 'v';
