@@ -28,5 +28,6 @@ my %query = (
 );
 
 for my $key (sort keys %query) {
-    print ucfirst $key, ":\n\t", join(', ', $query{$key}->@*), "\n" if $query{$key}->@*;
+    print ucfirst $key, ":\n\t", join(', ', $query{$key}->@*), "\n"
+        if $query{$key}->@*;
 }
