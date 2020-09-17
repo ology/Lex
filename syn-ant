@@ -27,10 +27,12 @@ my %query = (
     synsets    => [ $wn->querySense($w, 'syns') ],
 );
 
-print "* Word:\n\t$w\n";
+my $text = '';
 
 for my $key (sort keys %query) {
-    print ucfirst $key, ":\n\t", join(', ', $query{$key}->@*), "\n"
+    $text .= ucfirst $key . ":\n\t" . join(', ', $query{$key}->@*) . "\n"
         if $query{$key}->@*;
 }
+
+print "* Word:\n\t$w\n$text\n" if $text;
 }
