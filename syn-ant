@@ -13,26 +13,26 @@ my $word = shift || 'small';
 my $pos  = shift || 'a';
 
 for my $sense (1 .. 100) {
-my $w = "$word#$pos#$sense";
+    my $w = "$word#$pos#$sense";
 
-my %query = (
-    antonyms   => [ $wn->queryWord($w, 'ants') ],
-    cause      => [ $wn->querySense($w, 'caus') ],
-    entailment => [ $wn->querySense($w, 'enta') ],
-    holonyms   => [ $wn->querySense($w, 'holo') ],
-    hypernyms  => [ $wn->querySense($w, 'hypes') ],
-    hyponyms   => [ $wn->querySense($w, 'hypos') ],
-    meronyms   => [ $wn->querySense($w, 'mero') ],
-    similar    => [ $wn->querySense($w, 'sim') ],
-    synsets    => [ $wn->querySense($w, 'syns') ],
-);
+    my %query = (
+        antonyms   => [ $wn->queryWord($w, 'ants') ],
+        cause      => [ $wn->querySense($w, 'caus') ],
+        entailment => [ $wn->querySense($w, 'enta') ],
+        holonyms   => [ $wn->querySense($w, 'holo') ],
+        hypernyms  => [ $wn->querySense($w, 'hypes') ],
+        hyponyms   => [ $wn->querySense($w, 'hypos') ],
+        meronyms   => [ $wn->querySense($w, 'mero') ],
+        similar    => [ $wn->querySense($w, 'sim') ],
+        synsets    => [ $wn->querySense($w, 'syns') ],
+    );
 
-my $text = '';
+    my $text = '';
 
-for my $key (sort keys %query) {
-    $text .= ucfirst $key . ":\n\t" . join(', ', $query{$key}->@*) . "\n"
-        if $query{$key}->@*;
-}
+    for my $key (sort keys %query) {
+        $text .= ucfirst $key . ":\n\t" . join(', ', $query{$key}->@*) . "\n"
+            if $query{$key}->@*;
+    }
 
-print "* Word:\n\t$w\n$text\n" if $text;
+    print "* Word:\n\t$w\n$text\n" if $text;
 }
