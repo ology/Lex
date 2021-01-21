@@ -14,10 +14,10 @@ my $text = Lingua::EN::Fathom->new();
 
 print "Chars\tWords\tComplex\tSentences\tSylW\tWpS\tFOG\tFlesch\tKincaid\tName\n";
 
-for my $file ( @files ) {
+for my $file (sort @files) {
     $text->analyse_file($file);
 
-    my $basename = basename( $file, qw(.txt) );
+    my $basename = basename($file, qw(.txt));
 
     printf "%d\t%d\t%.2f\t%d\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\t%s\n",
         $text->num_chars,
