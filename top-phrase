@@ -9,10 +9,10 @@ use Lingua::EN::Ngram;
 use Lingua::StopWords qw(getStopWords);
 
 my $file = shift || die "Usage: perl $0 file.txt [size] [max] [en]\n";
-my $size = shift || 2;
 my $max  = shift || 20;
 my $stop = shift // 'en'; # 0 or en
 
+my $size = 1;
 my $width = length $max;
 
 $stop = getStopWords($stop) if $stop;
@@ -25,7 +25,7 @@ my $ngram = Lingua::EN::Ngram->new(text => $content);
 
 # Word frequency
 my $words = {};
-my $v = $ngram->ngram(1);
+my $v = $ngram->ngram($size++);
 my $i = 1;
 for my $p (sort { $v->{$b} <=> $v->{$a} } keys %$v) {
     next if $p =~ /^(?!')[[:punct:]]$/; # Exclude punctuation
@@ -41,7 +41,7 @@ print "\n";
 
 # Phrase frequency
 my $phrases = {};
-$v = $ngram->ngram($size);
+$v = $ngram->ngram($size++);
 $i = 1;
 for my $p (sort { $v->{$b} <=> $v->{$a} } keys %$v) {
     next if $p =~ /(?!')[[:punct:]]/; # Exclude punctuation
@@ -57,7 +57,7 @@ for my $p (sort { $v->{$b} <=> $v->{$a} } keys %$v) {
 print "\n";
 
 # Another Phrase frequency!
-$v = $ngram->ngram($size + 1);
+$v = $ngram->ngram($size);
 $i = 1;
 for my $p (sort { $v->{$b} <=> $v->{$a} } keys %$v) {
     next if $p =~ /(?!')[[:punct:]]/; # Exclude punctuation
