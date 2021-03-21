@@ -1,0 +1,70 @@
+#!/usr/bin/perl
+use strict;
+use warnings;
+
+# Mechanically rank phrases by frequency.
+
+use File::Slurper qw(read_text);
+use Lingua::EN::Ngram;
+use Lingua::StopWords qw(getStopWords);
+
+my $file = shift || die "Usage: perl $0 file.txt [size] [max] [en]\n";
+my $size = shift || 2;
+my $max  = shift || 20;
+my $stop = shift // 'en'; # 0 or en
+
+my $width = length $max;
+
+$stop = getStopWords($stop) if $stop;
+
+my $content = read_text($file);
+
+$content = lc $content;
+
+my $ngram = Lingua::EN::Ngram->new(text => $content);
+
+# Word frequency
+my $words = {};
+my $v = $ngram->ngram(1);
+my $i = 1;
+for my $p (sort { $v->{$b} <=> $v->{$a} } keys %$v) {
+    next if $p =~ /^(?!')[[:punct:]]$/; # Exclude punctuation
+    next if $stop->{$p}; # Exclude stopwords
+    next if $v->{$p} == 1; # No single frequency phrases
+    next if length($p) == 1;
+    printf "%*d. %d\t%s\n", $width, $i, $v->{$p}, $p;
+    $words->{$p} = $v->{$p};
+    last if ++$i > $max;
+}
+
+print "\n";
+
+# Phrase frequency
+my $phrases = {};
+$v = $ngram->ngram($size);
+$i = 1;
+for my $p (sort { $v->{$b} <=> $v->{$a} } keys %$v) {
+    next if $p =~ /(?!')[[:punct:]]/; # Exclude punctuation
+    next if grep { $stop->{$_} } (split /\s+/, $p); # Exclude stopwords
+    next if ! grep { $p =~ /\b$_\b/ } keys %$words; # Exclude phrases without top words.
+#    next if $ngrams->{$phrase} == 1; # No single frequency phrases.
+    next if grep { length($_) == 1 } (split /\s+/, $p);
+    printf "%*d. %d\t%s\n", $width, $i, $v->{$p}, $p;
+    $phrases->{$p} = $v->{$p};
+    last if ++$i > $max;
+}
+
+print "\n";
+
+# Another Phrase frequency!
+$v = $ngram->ngram($size + 1);
+$i = 1;
+for my $p (sort { $v->{$b} <=> $v->{$a} } keys %$v) {
+    next if $p =~ /(?!')[[:punct:]]/; # Exclude punctuation
+    next if grep { $stop->{$_} } (split /\s+/, $p); # Exclude stopwords
+    next if ! grep { $p =~ /\b$_\b/ } keys %$words; # Exclude phrases without top words.
+#    next if $ngrams->{$phrase} == 1; # No single frequency phrases.
+    next if grep { length($_) == 1 } (split /\s+/, $p);
+    printf "%*d. %d\t%s\n", $width, $i, $v->{$p}, $p;
+    last if ++$i > $max;
+}
