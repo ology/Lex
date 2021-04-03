@@ -1,0 +1,93 @@
+#!/usr/bin/env perl
+
+# IRC lexical analysis bot
+
+# Sample config (irc-bot.yml):
+#
+# nick: 'yourbot'
+# user: 'Your Name Bot'
+# channel: '#yourchan'
+# server: 'chat.host.net:6667'
+
+use strict;
+use warnings;
+
+use Data::Dumper::Compact qw(ddc);
+use Mojo::IRC;
+use YAML::XS qw(LoadFile);
+
+# Use local author libraries
+use lib map { "$ENV{HOME}/sandbox/$_/lib" } qw(Lingua-EN-Opinion);
+
+use Lingua::EN::Opinion;
+
+use constant OPTIONS => { max_width => 120 };
+
+my $conf = LoadFile("$0.yml");
+
+my @to_chan = (privmsg => $conf->{channel});
+
+my $irc = Mojo::IRC->new(
+  nick => $conf->{nick},
+  user => $conf->{user},
+  server => $conf->{server},
+  tls => {},
+);
+
+$irc->on(irc_join => sub {
+  my($self, $message) = @_;
+  print "SUCCESS: $message->{params}[0] joined\n";
+});
+
+$irc->on(message => sub {
+  my($self, $message) = @_;
+});
+
+$irc->on(irc_privmsg => sub {
+  my($self, $message) = @_;
+  if ($message && $message->{params} && $message->{params}[1] =~ /^(\w+)[:,]\s*(.*)$/) {
+    my $nick = $1;
+    my $msg = $2;
+    if ($nick eq $conf->{nick}) {
+      print "$message->{prefix} said: $message->{params}[1]\n";
+      # COMMAND: leave
+      if ($msg eq 'leave') {
+        $irc->write(QUIT => 'oof');
+        exit;
+      }
+      # COMMAND: help
+      elsif ($msg eq 'help') {
+        $irc->write(@to_chan, ':Address me with one of: [source|emotion] for example');
+      }
+      # COMMAND: source
+      elsif ($msg eq 'source') {
+        $irc->write(@to_chan, ':My guts are at https://github.com/ology/Lex/blob/master/irc-bot');
+      }
+      # COMMAND: emotion
+      elsif ($msg =~ /^emotion\s+(.+)$/) {
+        my $opinion = Lingua::EN::Opinion->new(text => $1);
+        $opinion->nrc_analyze;
+        my $emotion = ddc($opinion->nrc_scores, OPTIONS);
+        $emotion =~ s/\n//g;
+        $emotion =~ s/\s+/ /g;
+        $emotion =~ s/^\[\s*{\s*//;
+        $emotion =~ s/,} \]//;
+        $emotion =~ s/ =>/:/g;
+        $irc->write(@to_chan, ':' . "Sentiment: $emotion");
+      }
+      # Fallthough
+      else {
+        (my $you = $message->{prefix}) =~ s/^(.+?)!.*$/$1/;
+        $irc->write(@to_chan, qq|:You said, "$msg" $you|);
+      }
+    }
+  }
+});
+
+$irc->connect(sub {
+  my($irc, $err) = @_;
+  return warn $err if $err;
+  $irc->write(join => $conf->{channel});
+});
+
+Mojo::IOLoop->start;
