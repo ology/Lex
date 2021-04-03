@@ -67,6 +67,7 @@ $irc->on(irc_privmsg => sub {
       elsif ($msg =~ /^emotion\s+(.+)$/) {
         my $opinion = Lingua::EN::Opinion->new(text => $1);
         $opinion->nrc_analyze;
+        # Perform gymnastics:
         my $emotion = ddc($opinion->nrc_scores, OPTIONS);
         $emotion =~ s/\n//g;
         $emotion =~ s/\s+/ /g;
