@@ -21,7 +21,7 @@ for my $p (sort { $phrase->{$b} <=> $phrase->{$a} } keys %$phrase) {
     next if grep { $stop->{$_} } split /\s/, $p; # No stopwords please.
     next if $phrase->{$p} == 1; # No single frequency phrases.
 
-    printf "%*d. %d\t%s\n", length($max), $i, $phrase->{$p}, $p;
+    printf "%*d. %4d\t%s\n", length($max), $i, $phrase->{$p}, $p;
 
     last if ++$i > $max;
 }
