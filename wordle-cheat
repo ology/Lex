@@ -4,25 +4,36 @@ use warnings;
 
 # Easy wordle cheating
 
-use Term::Choose ();
 use IO::Prompt::Tiny qw(prompt);
+use List::Util qw(any);
 
 my $words = '/usr/share/dict/words';
 my $n = 5;
-my $choices = [qw( unknown knowns )];
 my $regex = '';
-
-my $new = Term::Choose->new;
+my $unknown = join '', 'a' .. 'z';
+my $in_word = '';
 
 for my $i (1 .. $n) {
-    my $choice = $new->choose($choices, { prompt => "$i. Building regex: '$regex'" });
-    my $part = '[a-z]';
-    if ($choice eq 'knowns') {
-        my $knowns = prompt("Enter $choice:");
-        $part = $knowns ? "[$knowns]" : '[a-z]';
+    my $choice = prompt("What is letter $i, if known?");
+    my $part = $unknown;
+    if ($choice) {
+        $part = $choice;
     }
-    $regex .= $part;
+    else {
+        $choice = prompt('Are there any in-word letters known?');
+        $in_word .= $choice;
+
+        $choice = prompt('Are there any not-in-word letters known?');
+        for my $letter (split //, $choice) {
+            $unknown =~ s/$letter//;
+        }
+        $part = $unknown;
+    }
+    $regex .= "[$part]";
+    print "Growing regex: $regex\n";
 }
+
+my @in_word = split //, $in_word;
 
 $regex = "'^$regex\$'";
 print "Regex: $regex\n";
@@ -32,6 +43,7 @@ my $possibles = qx{ grep $regex $words };
 my $i = 0;
 for my $word (split /\n/, $possibles) {
     next if $word =~ /'/;
+    next unless any { $word =~ /$_/ } @in_word;
     $i++;
     print "\t$i. $word\n";
 }
