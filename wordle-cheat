@@ -2,7 +2,7 @@
 use strict;
 use warnings;
 
-# Allows easy wordle cheating
+# Easy wordle cheating
 
 use Term::Choose ();
 use IO::Prompt::Tiny qw(prompt);
