@@ -36,6 +36,7 @@ for my $i (1 .. $n) {
             $part = $unknown;
         }
     }
+
     $regex .= "[$part]";
 #    print "Growing regex: $regex\n";
 }
