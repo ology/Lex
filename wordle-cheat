@@ -11,8 +11,8 @@ my $words = '/usr/share/dict/words';
 my $n = 5;
 my $regex = '';
 my $unknown = join '', 'a' .. 'z';
-my $in_word = '';
-my $out_word = '';
+my $in_word;
+my $out_word;
 
 for my $i (1 .. $n) {
     my $choice = prompt("What is letter $i, if known?");
@@ -21,12 +21,12 @@ for my $i (1 .. $n) {
         $part = $choice;
     }
     else {
-        unless ($in_word) {
+        unless (defined $in_word) {
             $choice = prompt('Are there any in-word letters known?');
             $in_word = $choice;
         }
 
-        unless ($out_word) {
+        unless (defined $out_word) {
             $choice = prompt('Are there any not-in-word letters known?');
             $out_word = $choice;
             for my $letter (split //, $choice) {
