@@ -36,7 +36,7 @@ for my $i (1 .. $n) {
         }
     }
     $regex .= "[$part]";
-    print "Growing regex: $regex\n";
+#    print "Growing regex: $regex\n";
 }
 
 my @in_word = split //, $in_word;
