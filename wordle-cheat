@@ -1,0 +1,38 @@
+#!/usr/bin/env perl
+use strict;
+use warnings;
+
+# Allows easy wordle cheating
+
+use Term::Choose ();
+use IO::Prompt::Tiny qw(prompt);
+
+my $words = '/usr/share/dict/words';
+my $n = 6;
+
+my $choices = [qw( unknown knowns )];
+my $new = Term::Choose->new;
+
+my $regex = '';
+
+for my $i (1 .. $n) {
+    my $choice = $new->choose($choices, { prompt => "$i. Building regex: '$regex'" });
+    my $part = '[a-z]';
+    if ($choice eq 'knowns') {
+        my $knowns = prompt("Enter $choice:");
+        $part = $knowns ? "[$knowns]" : '[a-z]';
+    }
+    $regex .= $part;
+}
+
+$regex = "'^$regex\$'";
+print "Regex: $regex\n";
+
+my $possibles = qx{ grep $regex $words };
+
+my $i = 0;
+for my $word (split /\n/, $possibles) {
+    next if $word =~ /'/;
+    $i++;
+    print "\t$i. $word\n";
+}
