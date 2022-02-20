@@ -12,22 +12,28 @@ my $n = 5;
 my $regex = '';
 my $unknown = join '', 'a' .. 'z';
 my $in_word = '';
+my $out_word = '';
 
 for my $i (1 .. $n) {
     my $choice = prompt("What is letter $i, if known?");
-    my $part;
+    my $part = $unknown;
     if ($choice) {
         $part = $choice;
     }
     else {
-        $choice = prompt('Are there any in-word letters known?');
-        $in_word .= $choice;
-
-        $choice = prompt('Are there any not-in-word letters known?');
-        for my $letter (split //, $choice) {
-            $unknown =~ s/$letter//;
+        unless ($in_word) {
+            $choice = prompt('Are there any in-word letters known?');
+            $in_word = $choice;
         }
-        $part = $unknown;
+
+        unless ($out_word) {
+            $choice = prompt('Are there any not-in-word letters known?');
+            $out_word = $choice;
+            for my $letter (split //, $choice) {
+                $unknown =~ s/$letter//;
+            }
+            $part = $unknown;
+        }
     }
     $regex .= "[$part]";
     print "Growing regex: $regex\n";
