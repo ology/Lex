@@ -20,21 +20,21 @@ for my $i (1 .. $n) {
     if ($choice) {
         $part = $choice;
     }
-
-    unless (defined $in_word) {
-        $choice = prompt('Are there any in-word letters known?');
-        $in_word = $choice;
-    }
-
-    unless (defined $out_word) {
-        $choice = prompt('Are there any not-in-word letters known?');
-        $out_word = $choice;
-        for my $letter (split //, $choice) {
-            $unknown =~ s/$letter//;
+    else {
+        unless (defined $in_word) {
+            $choice = prompt('Are there any in-word letters known?');
+            $in_word = $choice;
         }
-        $part = $unknown;
-    }
 
+        unless (defined $out_word) {
+            $choice = prompt('Are there any not-in-word letters known?');
+            $out_word = $choice;
+            for my $letter (split //, $choice) {
+                $unknown =~ s/$letter//;
+            }
+            $part = $unknown;
+        }
+    }
     $regex .= "[$part]";
 #    print "Growing regex: $regex\n";
 }
