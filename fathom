@@ -4,9 +4,9 @@ use warnings;
 
 use Data::Dumper::Compact qw(ddc);
 use File::Basename;
+use File::Find::Rule;
 use HTML::D3;
 use Lingua::EN::Fathom;
-use File::Find::Rule;
 
 my $path = shift || die "Usage: perl $0 /path/to/files";
 
@@ -29,7 +29,7 @@ for my $file (sort @files) {
     # push $data{percent_complex_words}->@*, { label => $basename, value => $text->percent_complex_words * 100 };
     # push $data{num_sentences}->@*,         { label => $basename, value => $text->num_sentences };
     # push $data{syllables_per_word}->@*,    { label => $basename, value => $text->syllables_per_word };
-    push $data{words_per_sentence}->@*,    { label => $basename, value => $text->words_per_sentence };
+    # push $data{words_per_sentence}->@*,    { label => $basename, value => $text->words_per_sentence };
     push $data{fog}->@*,                   { label => $basename, value => $text->fog };
     # push $data{flesch}->@*,                { label => $basename, value => $text->flesch };
     # push $data{kincaid}->@*,               { label => $basename, value => $text->kincaid };
