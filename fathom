@@ -42,9 +42,6 @@ my $chart = HTML::D3->new(
     title  => 'Inaugural Address Trends',
 );
 
-my @data;
-for my $key (keys %data) {
-    push @data, { name => $key, data => $data{$key} };
-}
+my @data = map { { name => $_, data => $data{$_} } } sort keys %data;
 
 print $chart->render_multi_series_line_chart_with_tooltips(\@data);
