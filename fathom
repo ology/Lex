@@ -24,16 +24,16 @@ for my $file (sort @files) {
     my $basename = basename($file, qw(.txt));
 
     # printf "%d\t%d\t%.2f\t%d\t%.2f\t%.2f\t%.2f\t%.2f\t%.2f\t%s\n",
-    push $data{chars}->@*, { label => '', value => $text->num_chars };
-    push $data{words}->@*, { label => '', value => $text->num_words };
-    push $data{complex}->@*, { label => '', value => $text->percent_complex_words };
-    push $data{sentences}->@*, { label => '', value => $text->num_sentences };
-    push $data{syll_per_word}->@*, { label => '', value => $text->syllables_per_word };
+    push $data{chars}->@*,          { label => '', value => $text->num_chars };
+    push $data{words}->@*,          { label => '', value => $text->num_words };
+    push $data{complex}->@*,        { label => '', value => $text->percent_complex_words };
+    push $data{sentences}->@*,      { label => '', value => $text->num_sentences };
+    push $data{syll_per_word}->@*,  { label => '', value => $text->syllables_per_word };
     push $data{word_perl_sent}->@*, { label => '', value => $text->words_per_sentence };
-    push $data{fog}->@*, { label => '', value => $text->fog };
-    push $data{flesch}->@*, { label => '', value => $text->flesch };
-    push $data{kincaid}->@*, { label => '', value => $text->kincaid };
-    push $data{name}->@*, { label => '', value => $basename };
+    push $data{fog}->@*,            { label => '', value => $text->fog };
+    push $data{flesch}->@*,         { label => '', value => $text->flesch };
+    push $data{kincaid}->@*,        { label => '', value => $text->kincaid };
+    push $data{name}->@*,           { label => '', value => $basename };
 }
 # print ddc \%data;
 
