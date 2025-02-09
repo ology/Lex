@@ -37,9 +37,8 @@ for my $file (sort @files) {
 }
 # print ddc \%data;
 
-__END__
 my $chart = HTML::D3->new(
-    width  => 800,
-    height => 600,
+    width  => 1000,
+    height => 800,
     title  => 'Inaugural Address Trends',
 );
